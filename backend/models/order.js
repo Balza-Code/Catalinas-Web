@@ -29,11 +29,14 @@ const orderSchema = new mongoose.Schema(
       required: true,
       default: "Pedido Online",
     },
+    comprobanteUrl: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 export default Order;

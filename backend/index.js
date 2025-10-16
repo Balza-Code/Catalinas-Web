@@ -2,14 +2,13 @@
 /* eslint-env node */
 // 1. Importar Express para poder usarlo
 import cors from "cors";
-import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import catalinaRoutes from './routers/catalinaRoutes.js';
 import router from "./routers/orderRoutes.js";
 
 
-dotenv.config();
+
 
 // 2. Crear una instancia de la aplicación express
 const app = express();

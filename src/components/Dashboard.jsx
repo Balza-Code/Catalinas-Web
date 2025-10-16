@@ -39,17 +39,17 @@ const Dashboard = ({ orders }) => {
 
         <div className='stat-card'>
           <h3>Ventas Totales</h3>
-          <p>${stats.totalSales}</p>
+          <p>{stats.totalSales}</p>
         </div>
 
         <div className='stat-card'>
           <h3>Pedidos Online Totales</h3>
-          <p>${stats.onlineSales}</p>
+          <p>{stats.onlineSales}</p>
         </div>
 
         <div className='stat-card'>
           <h3>Pedidos al detal</h3>
-          <p>${stats.detalSales}</p>
+          <p>{stats.detalSales}</p>
         </div>
       </div>
     </div>
