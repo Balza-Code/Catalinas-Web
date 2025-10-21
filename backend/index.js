@@ -4,10 +4,9 @@
 import cors from "cors";
 import express from 'express';
 import mongoose from 'mongoose';
+import authRoutes from "../backend/routers/authRoutes.js";
 import catalinaRoutes from './routers/catalinaRoutes.js';
 import router from "./routers/orderRoutes.js";
-
-
 
 
 // 2. Crear una instancia de la aplicación express
@@ -32,6 +31,8 @@ app.use('/api/catalinas', catalinaRoutes);
 // ---Fin de los cambios
 
 app.use('/api/orders', router)
+
+app.use('/api/auth', authRoutes);
 
 
 // Ayuda al desarrollador si accidentalmente este archivo se ejecuta en un entorno

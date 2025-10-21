@@ -1,9 +1,10 @@
+import { useState } from "react";
 import UploadReceiptForm from "./UploadReceiptForm";
 
 export const OrderCard = ({ order, onUpdateStatus }) => {
+  const [comprobanteUrl, setComprobanteUrl] = useState(order.comprobanteUrl);
   const handleReceiptUploaded = (updateOrder) => {
-    window.location.reload();
-  };
+  setComprobanteUrl(updateOrder.comprobanteUrl);  };
   return (
     <>
       <div className="order-card">
@@ -31,9 +32,9 @@ export const OrderCard = ({ order, onUpdateStatus }) => {
         {/* Lógica condicional para mostrar la subida o el enlace */}
         {order.estado === "Entregado" && (
           <div className="receipt-section">
-            {order.comprobanteUrl ? (
+            {comprobanteUrl ? (
               <a
-                href={order.comprobanteUrl}
+                href={comprobanteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
