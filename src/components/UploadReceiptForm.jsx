@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { uploadReceipt } from "../services/orderService";
 
 const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
   const [file, setFile] = useState(null);
@@ -17,23 +18,13 @@ const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
     formData.append("comprobante", file);
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/orders/${orderId}/upload-receipt`,
-        {
-          method: "POST",
-          body: formData, // No se necesita 'Content-Type', el navegador lo pone solo
-        }
-      );
-
-      const updateOrder = await response.json();
-      if (response.ok) {
-        alert("¡Comprobante Subido!");
-        onReceiptUploaded(updateOrder);
-      } else {
-        alert("Error al subir el archivo.");
-      }
+      const updatedOrder = await uploadReceipt(orderId, formData);
+      alert('¡Comprobante subido!');
+      onReceiptUploaded(updatedOrder);
+      
     } catch (error) {
-      console.error("Error de red: ", error);
+      console.error("Error de red:", error);
+      alert('Error al subir el archivo.');
     } finally {
       setUploading(false);
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getAuthHeaders } from "../services/orderService";
 
 const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
   const [cart, setCart] = useState([]);
@@ -46,7 +47,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
     try {
       const response = await fetch("http://localhost:4000/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(orderData),
       });
 

@@ -26,7 +26,15 @@ export async function loginUser(req, res) {
   try {
     const user = await User.findOne({ email });
     if (user && (await user.comparePassword(password))) {
-      res.json({ token: generateToken(user._id) });
+      res.json({ 
+        token: generateToken(user._id),
+        user: {
+          _id: user._id,
+          nombre: user.nombre,
+          email: user.email,
+          role: user.role
+        }
+       });
     } else {
       res.status(401).json({ mensaje: 'Credenciales invalidas' }) // 401 Unauthorized
     }

@@ -20,7 +20,7 @@ export const Loginpage = () => {
 
       // 2. Si tiene éxio, usa la función 'login' del contexto
       // Esto guardará el token en localStorage y actualizará el estado global
-      auth.login(data.token);
+      auth.login(data);
 
 
     } catch ( error) {

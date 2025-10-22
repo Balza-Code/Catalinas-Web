@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getAuthHeaders } from "../services/orderService";
 
 // Recibimos una función 'onCatalinaAdded' como prop
 // La usaremos para avisarle al componente App que se ha añadido una nueva catalina.
@@ -25,9 +26,7 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
       // 3. Hacemos la petición POST al backend, iagual que en Postman
       const response = await fetch("http://localhost:4000/api/catalinas", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(nuevaCatalina),
       });
 

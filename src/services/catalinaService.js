@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "./orderService";
+
 const API_URL = "http://localhost:4000/api/catalinas";
 
 export const getCatalinas = async () => {
@@ -9,7 +11,7 @@ export const getCatalinas = async () => {
 export const createdCatalina = async (catalinaData) => {
   const response = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(catalinaData),
   });
   if (!response.ok) throw new Error("Error al crear la catalina");
@@ -19,7 +21,7 @@ export const createdCatalina = async (catalinaData) => {
 export const updateCatalina = async (id, catalinaData) => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(catalinaData),
   });
   if (!response.ok) throw new Error("Error al actualizar la catalina");
@@ -28,8 +30,8 @@ export const updateCatalina = async (id, catalinaData) => {
 
 export const deleteCatalina = async (id) => {
   const response = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
-  if (!response.ok) throw new Error('Error al eliminar la catalina');
+  if (!response.ok) throw new Error("Error al eliminar la catalina");
   return await response.json();
-}
+};

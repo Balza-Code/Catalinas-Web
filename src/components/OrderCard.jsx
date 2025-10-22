@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UploadReceiptForm from "./UploadReceiptForm";
 
-export const OrderCard = ({ order, onUpdateStatus }) => {
+export const OrderCard = ({ order, onUpdateStatus, onReceiptUploaded }) => {
   const [comprobanteUrl, setComprobanteUrl] = useState(order.comprobanteUrl);
   const handleReceiptUploaded = (updateOrder) => {
   setComprobanteUrl(updateOrder.comprobanteUrl);  };
@@ -30,7 +30,7 @@ export const OrderCard = ({ order, onUpdateStatus }) => {
         <small>Fecha: {new Date(order.createdAt).toLocaleString()} </small>
 
         {/* Lógica condicional para mostrar la subida o el enlace */}
-        {order.estado === "Entregado" && (
+        {onReceiptUploaded  && (
           <div className="receipt-section">
             {comprobanteUrl ? (
               <a
@@ -41,16 +41,19 @@ export const OrderCard = ({ order, onUpdateStatus }) => {
                 Ver comprobante
               </a>
             ) : (
+              // Solo permite subir si el pedido está 'Entregado' (o el estado que definas)
+              order.estado === 'Entregado' && (
               <UploadReceiptForm
                 orderId={order._id}
                 onReceiptUploaded={handleReceiptUploaded}
               />
+              )
             )}
           </div>
         )}
 
         {/* {Mostramos las acciones solo si el pedido No está entregado/cancelado} */}
-        {order.estado !== "Entregado" && order.estado !== "Cancelado" && (
+        {onUpdateStatus && order.estado !== "Entregado" && order.estado !== "Cancelado" && (
           <div className="order-actions">
             <button
               type="button"

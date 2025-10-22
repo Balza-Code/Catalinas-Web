@@ -29,6 +29,14 @@ function AdminDashboard() {
     descripcion: "",
   });
 
+  // --- NUEVA FUNCIÓN ---
+  // Esta función actualizará la UI cuando se suba un comprobante
+  const handleReceiptUploaded = (updatedOrder) => {
+    setOrders(orders.map(order => 
+      order._id === updatedOrder._id ? updatedOrder : order
+    ));
+  };
+
   // 2. Define las funciones "Manejadoras" que los componentes hijos llamarán
   const handleOrderPlaced = (newOrder) => {
     // Actualiza el estado local para que la UI reaccione instantáneamente
@@ -127,7 +135,10 @@ function AdminDashboard() {
             onDelete={handleDeleteCatalina}
           />
           <h2>Historial de Pedidos y Ventas</h2>
-          <OrderList orders={orders} onUpdateStatus={handleUpdateOrderStatus} />
+          <OrderList orders={orders}
+           onUpdateStatus={handleUpdateOrderStatus}
+           onReceiptUploaded={handleReceiptUploaded}
+           />
 
         </div>
       </div>

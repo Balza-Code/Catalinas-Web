@@ -5,6 +5,9 @@ import {
   getAllCatalinas,
   updateCatalina
 } from '../controllers/catalinaController.js';
+import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+
 
 const router = Router();
 
@@ -17,12 +20,12 @@ const router = Router();
 router.get('/', getAllCatalinas);
 
 // POST /api/catalinas -> Crear una
-router.post('/', createCatalina);
+router.post('/', protect, adminOnly, createCatalina);
 
 // PUT /api/catalinas/:id -> Actualizar una
-router.put('/:id', updateCatalina);
+router.put('/:id', protect, adminOnly, updateCatalina);
 
 // DELETE /api/catalinas/:id -> Eliminar una
-router.delete('/:id', deleteCatalina);
+router.delete('/:id', protect, adminOnly, deleteCatalina);
 
 export default router;
