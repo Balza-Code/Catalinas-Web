@@ -13,6 +13,7 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin";
   const { showModal } = useModal();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const handleReceiptUploaded = (updateOrder) => {
     setComprobanteUrl(updateOrder.comprobanteUrl);
@@ -71,7 +72,7 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
         </td>
         <td className="px-8 py-4 text-center">
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setIsModalOpen(true)}
             className="text-gray-500 hover:text-gray-700"
           >
             <img src={Dots} alt="tres puntos" className="cursor-pointer w-8 h-8" />
@@ -79,8 +80,8 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
         </td>
       </tr>
 
-      {showModal && (
-  <Modal onClose={() => setShowModal(false)} title="Gestión del Pedido">
+      {isModalOpen && (
+  <Modal onClose={() => setIsModalOpen(false)} title="Gestión del Pedido">
     <div className="space-y-4">
       
       {/* --- SUBIDA DE COMPROBANTE --- */}

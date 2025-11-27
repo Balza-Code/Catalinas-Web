@@ -17,6 +17,7 @@ export const MobileOrderCard = ({
   const [comprobanteUrl, setComprobanteUrl] = useState(order.comprobanteUrl);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const { showModal } = useModal();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Reutilizamos tu lógica de colores para el estado
   const getStatusColor = (estado) => {
@@ -106,23 +107,22 @@ export const MobileOrderCard = ({
         <div className="border-t border-gray-100 pt-3 flex justify-end items-center gap-4">
           {/* Botón Detalles (Ojo) */}
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setIsModalOpen(true)}
             className="text-gray-400 hover:text-amber-600 transition-colors"
           ></button>
 
           {/* Botón Menú (3 puntos) */}
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setIsModalOpen(true)}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <img src={Dots} alt="" className="cursor-pointer" />
           </button>
         </div>
       </div>
-
       {/* --- MODAL (Reutilizamos tu lógica existente) --- */}
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)} title="Gestión del Pedido">
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)} title="Gestión del Pedido">
           <div className="space-y-4">
             {/* --- SUBIDA DE COMPROBANTE --- */}
             {order.estado === "Entregado" && !comprobanteUrl && (
