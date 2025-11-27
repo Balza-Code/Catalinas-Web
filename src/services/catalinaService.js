@@ -5,7 +5,7 @@ import { getAuthHeaders } from "./orderService";
 
 // Vite inyectará automáticamente la URL correcta dependiendo de dónde esté corriendo
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const API_URL = `${BASE_URL}/orders`;
+const API_URL = `${BASE_URL}/catalinas`;
 
 // ... resto del código
 
