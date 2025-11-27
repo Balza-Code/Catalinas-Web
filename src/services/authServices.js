@@ -31,7 +31,8 @@ export const registerUser = async (userData) => {
 
   const data = await res.json();
   if (!res.ok) {
-    console.error('Register error body', data)
+    // Logueamos el body de error para facilitar debugging en producción
+    console.error('authServices.registerUser error:', { status: res.status, body: data });
     throw new Error(data.mensaje || 'Error al registrarse');
   }
   return data;
