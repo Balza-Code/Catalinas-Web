@@ -1,70 +1,154 @@
 @import "tailwindcss";
+@theme {
+  --font-dm-sans: "DM Sans", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
+
+#root{
+  min-height: 100dvh;
+}
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+button{
+  cursor: pointer;
+}
+
+/* Tokens */
+.h1 {
+  @apply font-dm-sans text-5xl/tight text-pretty font-bold;
+}
+
+.h2 {
+  @apply font-dm-sans text-[40px]/tight text-pretty font-bold;
+}
+
+.h3 {
+  @apply font-dm-sans text-[34px]/tight text-pretty font-bold;
+}
+
+.h4 {
+  @apply font-dm-sans text-[28px]/tight text-pretty font-bold;
+}
+
+.h5 {
+  @apply font-dm-sans text-2xl/tight text-pretty font-bold;
+}
+
+.h6 {
+  @apply font-dm-sans text-xl/tight text-pretty font-medium;
+}
+
+.b1 {
+  @apply font-inter text-base text-pretty ;
+}
+
+.b2 {
+  @apply font-inter text-[14px] text-pretty font-normal;
+}
+.b3 {
+  @apply font-inter text-xs text-pretty font-normal;
+}
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --primary-100: #e8d5c4;
+  --primary-200: #d8b89b;
+  --primary-300: #c89a71;
+  --primary-400: #b87d48;
+  --primary-500: #8e6138;
+  --primary-600: #654527;
+  --primary-10: #e8d5c4;
+  --primary-50: #e8d5c4;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --secondary-100: #e9ded3;
+  --secondary-200: #d4bea7;
+  --secondary-300: #be9d7b;
+  --secondary-400: #a67c52;
+  --secondary-500: #816040;
+  --secondary-600: #5c442d;
+  --secondary-10: #a67c52;
+  --secondary-50: #a67c52;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  --accent-100: #FFD2C2;
+  --accent-200: #FFA586;
+  --accent-300: #FF7849;
+  --accent-400: #FF4B0D;
+  --accent-500: #CF3500;
+  --accent-600: #932600;
+  --accent-10: #FF7849;
+  --accent-50: #FF7849;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Layout general */
+.features-layout {
+  @apply  w-full max-h-full flex min-h-full;
+}
+.general-layout {
+  @apply max-h-full ;
+}
+.app-container {
+  @apply bg-(--primary-100) w-full ;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.sidebar {
+  @apply  p-2 border-r border-gray-200 max-h-full;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Estilos del dashboard general */
+
+.dashboard-container{
+  @apply w-full bg-white p-8 rounded border border-gray-200 max-h-[490px] overflow-y-auto
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 8px;
+}
+
+.stat-card {
+  @apply bg-white w-full  rounded border border-gray-200 p-4 flex flex-col gap-1 ;
+}
+
+.Summary{
+  @apply max-h-full 
+}
+
+/* Estilos de Aregar productos */
+
+.catalina-card{
+  @apply h-72 bg-white
+}
+
+/* Animaciones Modal */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
   }
-  a:hover {
-    color: #747bff;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+/* Ocultar barra de scroll para Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ocultar barra de scroll para IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
