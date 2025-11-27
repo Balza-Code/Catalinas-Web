@@ -11,10 +11,19 @@ export async function registerUser(req, res) {
   try {
     const userExist = await User.findOne({ email });
     if (userExist){
-      return res.status(400).json({mensaje: 'El usuario ya existe '});
+      return res.status(400).json({ mensaje: 'El usuario ya existe' });
     }
     const user = await User.create({ nombre, email, password} );
-    res.status(201).json({ token: generateToken(user._id) });
+    // Devuelve token y datos del usuario para permitir auto-login en el frontend
+    res.status(201).json({ 
+      token: generateToken(user._id),
+      user: {
+        _id: user._id,
+        nombre: user.nombre,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error del servidor ', error });
   } 
