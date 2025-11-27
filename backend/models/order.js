@@ -37,6 +37,10 @@ const orderSchema = new mongoose.Schema(
       required: true,
       ref: 'User'
     },
+    notas: {
+      type: String,
+      default: '' //Por defecto las notas esta vacias
+    }
   },
   {
     timestamps: true,

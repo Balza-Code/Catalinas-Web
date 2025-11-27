@@ -34,22 +34,38 @@ export async function createOrder(req, res) {
   }
 }
 
-export async function updateOrderStatus(req, res) {
+export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    // Obtenemos el nuevo estado del cuerpo de la petición
-    const { estado } = req.body;
+    const { estado, notas } = req.body; // Aceptamos 'estado' O 'notas'
+
+    const fieldsToUpdate = {};
+
+    // Construimos el objeto de actualización dinámicamente
+    // Si nos envían un 'estado', lo añadimos.
+    if (estado) {
+      fieldsToUpdate.estado = estado;
+    }
+    // Si nos envían 'notas', las añadimos.
+    // (permitimos 'notas === ""' para poder borrar las notas)
+    if (notas || notas === "") {
+      fieldsToUpdate.notas = notas;
+    }
+
+    // Si no nos enviaron nada para actualizar, devolvemos un error
+    if (Object.keys(fieldsToUpdate).length === 0) {
+      return res.status(400).json({ mensaje: "No hay campos para actualizar" });
+    }
 
     const pedidoActualizado = await Order.findByIdAndUpdate(
       id,
-      { estado: estado }, // Actualizamos solo el camppo estado
-      { new: true } // Para que nos devuelva el documento ya actualizado
+      { $set: fieldsToUpdate }, // Usamos $set para actualizar solo estos campos
+      { new: true }
     );
 
     if (!pedidoActualizado) {
       return res.status(404).json({ mensaje: "Pedido no encontrado" });
     }
-
     res.json(pedidoActualizado);
   } catch (error) {
     res.status(500).json({ mensaje: "Error al actualizar el pedido", error });
@@ -83,11 +99,9 @@ export async function uploadReceipt(req, res) {
 
     // Si el usuario NO es admin Y NO es el propietario, se rechaza.
     if (!esAdmin && !esPropietario) {
-      return res
-        .status(403)
-        .json({
-          mensaje: "Acceso denegado. No eres el propietario de este pedido.",
-        });
+      return res.status(403).json({
+        mensaje: "Acceso denegado. No eres el propietario de este pedido.",
+      });
     }
 
     if (!req.file) {
@@ -105,8 +119,6 @@ export async function uploadReceipt(req, res) {
     if (!pedido) {
       return res.status(404).json({ mensaje: "Pedido no encontrado" });
     }
-
-    
 
     res.json(pedido);
   } catch (error) {

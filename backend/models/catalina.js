@@ -19,7 +19,17 @@ const catalinaSchema = new mongoose.Schema({
   disponible: {
     type: Boolean,
     default: true  //Por defecto, un producto nuevo está disponible
-  } 
+  },
+  imageUrl: {
+    type: String,
+    default: '', // Por defecto, no hay imagen
+  },
+  tipoVenta: {
+    type: String,
+    enum: ['online', 'detal', 'ambos'],
+    default: 'ambos',
+    required: true
+  }
   }, {
     timestamps: true //Esto anade automáticamente los campos createdAt y updateAt
 })
