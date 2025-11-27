@@ -1,5 +1,7 @@
-
 // Props-driven presentational component for rendering the list of catalinas.
+
+import CatalinaCard from "./CatalinaCard";
+
 // The parent component should pass all handlers and state needed for edit/delete.
 export default function CatalinasList({
   catalinas = [],
@@ -10,54 +12,24 @@ export default function CatalinasList({
   onUpdateSubmit = () => {},
   onCancelEdit = () => {},
   onDelete = () => {},
-})
- {
-  
+  onCatalinaUpdated,
+}) {
   return (
-    <div className="catalinas-list">
+    <div className="catalinas-list grid grid-cols-2 md:grid-cols-4 grid-flow-rows w-full gap-2">
       {/* Mapeamos el array de catalinas para mostrarlas */}
       {catalinas.map((catalina, index) => (
-        <div key={catalina._id || index} className="catalina-card">
-          {editingId === catalina._id ? (
-            // Vista de edición (formulario)
-            <form onSubmit={(e) => onUpdateSubmit(e, catalina._id)}>
-              <input
-                type="text"
-                name="nombre"
-                id="nombre"
-                value={editFormData.nombre || ""}
-                onChange={onEditFormChange}
-              />
-              <input
-                type="number"
-                name="precio"
-                id="precio"
-                value={editFormData.precio || ""}
-                onChange={onEditFormChange}
-              />
-              <textarea
-                name="descripcion"
-                value={editFormData.descripcion || ""}
-                onChange={onEditFormChange}
-              />
-              <button type="submit">Guardar</button>
-              <button type="button" onClick={onCancelEdit}>
-                Cancelar
-              </button>
-            </form>
-          ) : (
-            // Vista normal (información)
-            <>
-              <h2>{catalina.nombre}</h2>
-              <p>Precio: ${catalina.precio}</p>
-              <p>{catalina.descripcion}</p>
-              <button onClick={() => onEditClick(catalina)}>Editar</button>
-              <button className="delete-btn" onClick={() => onDelete(catalina._id)}>
-                Eliminar
-              </button>
-            </>
-          )}
-        </div>
+        <CatalinaCard
+          key={index}
+          catalina={catalina}
+          editingId={editingId}
+          editFormData={editFormData}
+          onEditClick={onEditClick}
+          onEditFormChange={onEditFormChange}
+          onUpdateSubmit={onUpdateSubmit}
+          onCancelEdit={onCancelEdit}
+          onDelete={onDelete}
+          onCatalinaUpdated={onCatalinaUpdated}
+        />
       ))}
     </div>
   );

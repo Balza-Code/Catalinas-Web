@@ -9,6 +9,7 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [tipoVenta, setTipoVenta] = useState('ambos');
 
   const handleSubmit = async (event) => {
     // 1. Prevenimos que la página se recargue al enviar el formulario
@@ -20,6 +21,7 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
       // Convertiremos el precio a numero, ya que el input lo devuelve cómo string
       precio: Number(precio),
       descripcion,
+      tipoVenta
     };
 
     try {
@@ -49,30 +51,62 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="catalina-form">
-      <h3>Añadir Nueva Catalina</h3>
-      <input
-        type="text"
-        placeholder="Nombre"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-        required
-      />
+    <form
+  onSubmit={handleSubmit}
+  className="catalina-form bg-gray-50 p-6 rounded-lg  w-full space-y-4 mx-1 "
+>
+  <h3 className="h6 text-gray-600 mb-4">Añadir Nueva Catalina</h3>
 
-      <input 
-        type="number"
-        placeholder="Precio"
-        value={precio}
-        onChange={(e) => setPrecio(e.target.value)}
-      />
-      <input 
-        type="descripcion"
-        value={descripcion}
-        onChange={(e) => setDescripcion(e.target.value)}
-      />
+  {/* Nombre */}
+  <input
+    type="text"
+    placeholder="Nombre"
+    value={nombre}
+    onChange={(e) => setNombre(e.target.value)}
+    required
+    className="w-full px-3 py-2 b2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-amber-400"
+  />
 
-      <button type="submit"> Guardar Catalinas</button>
-    </form>
+  {/* Precio */}
+  <input
+    type="number"
+    placeholder="Precio"
+    value={precio}
+    onChange={(e) => setPrecio(e.target.value)}
+    className="w-full px-3 py-2 b2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-amber-400"
+  />
+
+  <div className="mb-2">
+        <label className="block text-sm font-bold mb-1">Disponible para:</label>
+        <select 
+          value={tipoVenta} 
+          onChange={(e) => setTipoVenta(e.target.value)}
+          className="w-full p-2 border rounded"
+        >
+          <option value="ambos">Ambos (Online y Detal)</option>
+          <option value="online">Solo Online (Clientes al Mayor)</option>
+          <option value="detal">Solo Venta al Detal (Físico)</option>
+        </select>
+      </div>
+
+  {/* Descripción */}
+  <textarea
+    placeholder="Descripción"
+    value={descripcion}
+    onChange={(e) => setDescripcion(e.target.value)}
+    rows={3}
+    className="w-full px-3 py-2 b2 border border-gray-200 rounded resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"
+  />
+
+  {/* Botón */}
+  <button
+    type="submit"
+    className="w-full px-4 py-2 bg-green-500 text-gray-50 b1 rounded hover:bg-green-600 transition font-medium"
+  >
+    Guardar Catalina
+  </button>
+</form>
+
   );
 };
 

@@ -3,6 +3,7 @@ import { OrderList } from '../components/OrderList';
 import OrderSection from '../components/OrderSection';
 import { useCatalinas } from '../hooks/useCatalinas';
 import useOrders from '../hooks/useOrders';
+import { createOrder } from '../services/orderService';
 
 function CustomerDashboard() {
   const { catalinas } = useCatalinas();
@@ -11,11 +12,12 @@ function CustomerDashboard() {
 
   // 2. ASEGÚRATE DE QUE ESTA FUNCIÓN EXISTE.
   // Esta es la función que recibe el aviso del componente OrderSection
-  const handleOrderPlaced = (newOrder) => {
-    // 3. Y LO MÁS IMPORTANTE: que esté llamando a 'setOrders'
-    // para actualizar el estado y provocar un nuevo render.
-    setOrders([newOrder, ...orders]);
-  };
+  const handleOrderPlaced = async (orderData) => {
+  const newOrder = await createOrder(orderData); // ✅ backend lo devuelve con createdAt
+  setOrders([newOrder, ...orders]); // ✅ ahora sí tiene fecha válida
+  return newOrder; // ✅ esto permite que OrderSection lo reciba completo
+};
+
 
   // --- NUEVA FUNCIÓN (idéntica a la del Admin) ---
   const handleReceiptUploaded = (updatedOrder) => {
@@ -29,7 +31,7 @@ function CustomerDashboard() {
       <OrderSection
         catalinas={catalinas}
         // 4. Asegúrate de estar pasando la función como prop
-        onOrderPlaced={handleOrderPlaced}
+        onOrderPlace={handleOrderPlaced}
       />
       <hr />
       <div className="admin-section">

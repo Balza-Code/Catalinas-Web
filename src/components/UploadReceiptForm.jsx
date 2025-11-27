@@ -31,12 +31,40 @@ const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
   };
 
   return ( 
-    <form onSubmit={handleSubmit} className="upload-form">
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button type="submit" disabled={uploading}>
-        {uploading ? 'Subiendo...' : 'Subir Comprobante'}
-      </button>
-    </form>
+    <form
+  onSubmit={handleSubmit}
+  className="upload-form w-full mt-4 flex flex-col gap-4 bg-white p-6 rounded-lg shadow-md max-w-md"
+>
+  <h3 className="text-lg font-semibold text-gray-800">Subir Comprobante</h3>
+
+  {/* Input de archivo */}
+  <input
+    type="file"
+    accept="image/*,application/pdf"
+    onChange={(e) => setFile(e.target.files[0])}
+    className="block w-full text-sm text-gray-700 
+               file:mr-4 file:py-2 file:px-4 
+               file:rounded file:border-0 
+               file:text-sm file:font-semibold 
+               file:bg-amber-400 file:text-white 
+               hover:file:bg-amber-500 
+               cursor-pointer"
+  />
+  <p className="text-xs text-gray-500">Formatos permitidos: JPG, PNG, PDF</p>
+
+  {/* Botón de acción */}
+  <button
+    type="submit"
+    disabled={uploading}
+    className={`w-full px-4 py-2 rounded text-white font-medium transition 
+      ${uploading 
+        ? "bg-gray-400 cursor-not-allowed" 
+        : "bg-green-500 hover:bg-green-600"}`}
+  >
+    {uploading ? "Subiendo..." : "Subir Comprobante"}
+  </button>
+</form>
+
   );
 };
 
