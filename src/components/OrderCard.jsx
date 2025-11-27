@@ -35,7 +35,7 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
   // Llama al 'gerente' para cambiar el estado
   const handleUpdateStatus = (newStatus) => {
     onUpdateOrder(order._id, { estado: newStatus });
-  };const [showModal, setShowModal] = useState(false);
+  };
 
   return (
     <>
