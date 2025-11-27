@@ -2,11 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { createOrder } from "../services/orderService";
 import { AuthContext } from "../context/AuthContext";
 import Cart from "../Icons/Cart.png";
+import { useModal } from "../context/ModalContext";
 
 // OrderSection: presentational component that delegates order creation to a prop
 export default function OrderSection({ catalinas = [], onOrderPlace }) {
   const [cart, setCart] = useState([]);
   const { user } = useContext(AuthContext);
+  const { showModal } = useModal();
   const [customerName, setCustomerName] = useState(user ? user.nombre : "");
 
   // --- 2. NUEVO ESTADO: Controla si el carrito móvil está visible ---
@@ -62,8 +64,7 @@ export default function OrderSection({ catalinas = [], onOrderPlace }) {
 
   const handleSubmitOrder = async () => {
     if (!customerName || cart.length === 0) {
-      alert("El carrito está vacio o no se identificó al usuario");
-      // setIsMobileCartOpen(false);
+      showModal({ title: 'Carrito vacío', message: 'El carrito está vacío o no se identificó al usuario' });
       return;
     }
 
@@ -89,11 +90,11 @@ export default function OrderSection({ catalinas = [], onOrderPlace }) {
       // If parent didn't add the order to list, it's still created by service/hook
       setCart([]);
       setCustomerName("");
-      alert("¡Pedido realizado con éxito!");
+      showModal({ title: 'Pedido', message: '¡Pedido realizado con éxito!' });
       return newOrder;
     } catch (error) {
       console.error("Error al crear el pedido", error);
-      alert("Hubo un error al realizar el pedido");
+      showModal({ title: 'Error', message: 'Hubo un error al realizar el pedido' });
       throw error;
     }
   };

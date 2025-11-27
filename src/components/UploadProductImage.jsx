@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { uploadCatalinaImage } from "../services/catalinaService";
+import { useModal } from "../context/ModalContext";
 
 const UploadProductImage = ({ catalinaId, onImageUploaded }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  const { showModal } = useModal();
+
   const handleUpload = async () => {
     if (!file) {
-      alert("Por favor, selecciona un archivo.");
+      showModal({ title: 'Archivo faltante', message: 'Por favor, selecciona un archivo.' });
       return;
     }
 
@@ -17,12 +20,12 @@ const UploadProductImage = ({ catalinaId, onImageUploaded }) => {
 
     try {
       const updatedCatalina = await uploadCatalinaImage(catalinaId, formData);
-      alert("Producto subido!");
+      showModal({ title: 'Éxito', message: 'Producto subido!' });
       onImageUploaded(updatedCatalina);
       setFile(null);
     } catch (error) {
       console.error("Error de red:", error);
-      alert("Error al subir el archivo.");
+      showModal({ title: 'Error', message: 'Error al subir el archivo.' });
     } finally {
       setUploading(false);
     }

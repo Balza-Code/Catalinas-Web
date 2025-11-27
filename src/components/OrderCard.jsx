@@ -3,6 +3,7 @@ import UploadReceiptForm from "./UploadReceiptForm";
 import Modal from "./Modal";
 import { AuthContext } from "../context/AuthContext";
 import Dots from "../Icons/dots.svg"
+import { useModal } from "../context/ModalContext";
 
 
 export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
@@ -11,6 +12,7 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
   const [nota, setNota] = useState(order.notas || "");
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin";
+  const { showModal } = useModal();
   
   const handleReceiptUploaded = (updateOrder) => {
     setComprobanteUrl(updateOrder.comprobanteUrl);
@@ -23,10 +25,10 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
   const handleSavedNote = () => {
     if (typeof onUpdateOrder === "function") {
       onUpdateOrder(order._id, { notas: nota });
-      alert("Nota Guardada");
+      showModal({ title: 'Nota', message: 'Nota Guardada' });
     } else {
       // safety: should not happen because edit UI is admin-only
-      alert("No autorizado para guardar la nota");
+      showModal({ title: 'No autorizado', message: 'No autorizado para guardar la nota' });
     }
   };
 

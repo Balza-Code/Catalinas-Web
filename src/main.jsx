@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { ModalProvider } from './context/ModalContext.jsx'
 import './index.css'
 import AdminLayout from './components/layout/AdminLayout.jsx'
 import AdminDashboard from './components/AdminDashboard.jsx'
@@ -16,6 +17,7 @@ import RedirectToRole from './components/RedirectToRole.jsx'
 import CustomerLayout from './components/layout/CustomerLayout.jsx';
 import CustomerNewOrderPage from './pages/CustomerNewOrder.jsx'
 import ClientHistoryPage from './pages/ClientHistoryPage.jsx'
+import { HashRouter } from 'react-router-dom';
 
 const protectedRoutes = {
   path: 'admin',
@@ -62,7 +64,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-    <RouterProvider router={router} />
+      <ModalProvider>
+        <RouterProvider router={router} />
+      </ModalProvider>
     </AuthProvider>
   </StrictMode>,
 )

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { getAuthHeaders } from "../services/orderService";
 import Cart from "../Icons/Cart.png";
+import { useModal } from "../context/ModalContext";
 
 const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
   const [cart, setCart] = useState([]);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const { showModal } = useModal();
 
   const addToCart = (catalina) => {
     // 1. Revisa si la catalina ya está en el carrito
@@ -49,7 +51,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
   };
   const handleRegisterSale = async () => {
     if (cart.length === 0) {
-      alert("Añade productos para registrar la venta.");
+      showModal({ title: 'Carrito vacío', message: 'Añade productos para registrar la venta.' });
       return;
     }
 
@@ -74,7 +76,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
 
       const newOrder = await response.json();
       if (response.ok) {
-        alert("Venta al detal registrada!");
+          showModal({ title: 'Venta registrada', message: 'Venta al detal registrada!' });
         onOrderPlaced(newOrder); // Actalualizamos la lista principl de pedidos
         setCart([]); // Vaciamos el carrito
       }

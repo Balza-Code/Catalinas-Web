@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { uploadReceipt } from "../services/orderService";
+import { useModal } from "../context/ModalContext";
 
 const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const { showModal } = useModal();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!file) {
-      alert("Por favor, selecciona un archivo. ");
+      showModal({ title: 'Archivo faltante', message: 'Por favor, selecciona un archivo.' });
       return;
     }
 
@@ -19,12 +21,12 @@ const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
 
     try {
       const updatedOrder = await uploadReceipt(orderId, formData);
-      alert('¡Comprobante subido!');
+      showModal({ title: 'Comprobante', message: '¡Comprobante subido!' });
       onReceiptUploaded(updatedOrder);
       
     } catch (error) {
       console.error("Error de red:", error);
-      alert('Error al subir el archivo.');
+      showModal({ title: 'Error', message: 'Error al subir el archivo.' });
     } finally {
       setUploading(false);
     }

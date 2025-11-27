@@ -3,6 +3,7 @@ import Modal from "./Modal";
 import { AuthContext } from "../context/AuthContext";
 import UploadReceiptForm from "./UploadReceiptForm";
 import Dots from "../Icons/dots.svg"
+import { useModal } from "../context/ModalContext";
 // Importa tus iconos (Eye, Dots) y tu componente Modal/UploadForm aquí
 
 export const MobileOrderCard = ({
@@ -16,6 +17,7 @@ export const MobileOrderCard = ({
   const [nota, setNota] = useState(order.notas || "");
   const [comprobanteUrl, setComprobanteUrl] = useState(order.comprobanteUrl);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const { showModal } = useModal();
 
   // Reutilizamos tu lógica de colores para el estado
   const getStatusColor = (estado) => {
@@ -34,10 +36,10 @@ export const MobileOrderCard = ({
   const handleSavedNote = () => {
     if (typeof onUpdateOrder === "function") {
       onUpdateOrder(order._id, { notas: nota });
-      alert("Nota Guardada");
+      showModal({ title: 'Nota', message: 'Nota Guardada' });
     } else {
       // safety: should not happen because edit UI is admin-only
-      alert("No autorizado para guardar la nota");
+      showModal({ title: 'No autorizado', message: 'No autorizado para guardar la nota' });
     }
   };
 

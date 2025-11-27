@@ -1,6 +1,8 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { registerUser } from "../services/authServices";
+import { useNavigate } from 'react-router-dom';
+import { useModal } from '../context/ModalContext';
 
 export const RegisterPage = () => {
   const [nombre, setNombre] = useState("");
@@ -9,16 +11,20 @@ export const RegisterPage = () => {
   const [error, setError] = useState(null);
 
   const auth = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { showModal } = useModal();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
     try {
       const data = await registerUser({ nombre, email, password });
-      // Si el backend devuelve token + user, logueamos automáticamente
-      if (data && data.token && data.user) {
-        auth.login(data);
-      }
+      // Mostramos modal de registro correcto y redirigimos al login
+      showModal({
+        title: 'Registro completo',
+        message: 'Te has registrado correctamente. Serás redirigido al login.',
+        onClose: () => navigate('/login')
+      });
     } catch (err) {
       setError(err.message || "Error al registrarse");
     }

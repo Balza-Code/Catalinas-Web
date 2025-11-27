@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { getAuthHeaders } from "../services/orderService";
+import { useModal } from "../context/ModalContext";
 
 // Recibimos una función 'onCatalinaAdded' como prop
 // La usaremos para avisarle al componente App que se ha añadido una nueva catalina.
@@ -10,6 +11,7 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
   const [precio, setPrecio] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipoVenta, setTipoVenta] = useState('ambos');
+  const { showModal } = useModal();
 
   const handleSubmit = async (event) => {
     // 1. Prevenimos que la página se recargue al enviar el formulario
@@ -43,7 +45,7 @@ const AddCatalinaForm = ({ onCatalinaAdded }) => {
         setDescripcion("");
       } else {
         // Si el backend devuelve un error, lo mostramos
-        alert(`Error al crear la catalina:  ${data.mensaje}`);
+        showModal({ title: 'Error', message: `Error al crear la catalina: ${data.mensaje}` });
       }
     } catch (error) {
       console.error("Error de red: ", error);
