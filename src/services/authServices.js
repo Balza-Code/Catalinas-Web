@@ -1,4 +1,11 @@
-const API_URL = "http://localhost:4000/api/auth";
+// const API_URL = "http://localhost:4000/api/auth";
+// src/services/orderService.js
+
+// Vite inyectará automáticamente la URL correcta dependiendo de dónde esté corriendo
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = `${BASE_URL}/orders`;
+
+// ... resto del código
 
 export const loginUser = async (credentials) => {
   const res = await fetch(`${API_URL}/login`, {

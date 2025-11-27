@@ -1,4 +1,11 @@
-const API_URL = "http://localhost:4000/api/orders";
+// const API_URL = "http://localhost:4000/api/orders";
+// src/services/orderService.js
+
+// Vite inyectará automáticamente la URL correcta dependiendo de dónde esté corriendo
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = `${BASE_URL}/orders`;
+
+// ... resto del código
 
 // Función auxiliar para obtener los encabezados con el token
 
@@ -36,13 +43,22 @@ export const createOrder = async (orderData) => {
   return await response.json();
 };
 
-export const updateOrder = async (id, newStatus) => {
+export const updateOrder = async (id, updateData) => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "PATCH",
     headers: getAuthHeaders(),
-    body: JSON.stringify(newStatus),
+    body: JSON.stringify(updateData),
   });
-  if (!response.ok) throw new Error("Error al actualizar el pedido");
+  if (!response.ok) {
+    let errMsg = `Error al actualizar el pedido (status ${response.status})`;
+    try {
+      const data = await response.json();
+      if (data && data.mensaje) errMsg = data.mensaje;
+    } catch (e) {
+      // ignore JSON parse errors
+    }
+    throw new Error(errMsg);
+  }
   return await response.json();
 };
 

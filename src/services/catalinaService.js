@@ -1,6 +1,13 @@
 import { getAuthHeaders } from "./orderService";
 
-const API_URL = "http://localhost:4000/api/catalinas";
+// const API_URL = "http://localhost:4000/api/catalinas";
+// src/services/orderService.js
+
+// Vite inyectará automáticamente la URL correcta dependiendo de dónde esté corriendo
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = `${BASE_URL}/orders`;
+
+// ... resto del código
 
 export const getCatalinas = async () => {
   const response = await fetch(API_URL);
@@ -31,7 +38,19 @@ export const updateCatalina = async (id, catalinaData) => {
 export const deleteCatalina = async (id) => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error("Error al eliminar la catalina");
+  return await response.json();
+};
+
+export const uploadCatalinaImage = async (catalinaId, formData) => {
+  const response = await fetch(`${API_URL}/${catalinaId}/upload-image`, {
+    method: 'POST',
+    // Usamos getAuthHeaders(true) para que ponga el token PERO NO el Content-Type
+    headers: getAuthHeaders(true), 
+    body: formData
+  });
+  if (!response.ok) throw new Error('Error al subir la imagen');
   return await response.json();
 };
