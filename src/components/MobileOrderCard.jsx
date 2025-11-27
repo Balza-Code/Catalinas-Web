@@ -11,7 +11,6 @@ export const MobileOrderCard = ({
   onUpdateOrder,
   onReceiptUploaded,
 }) => {
-  const [showModal, setShowModal] = useState(false);
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin";
   const [nota, setNota] = useState(order.notas || "");
