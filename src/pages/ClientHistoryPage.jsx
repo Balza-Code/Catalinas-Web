@@ -20,7 +20,7 @@ function CustomerDashboard() {
   };
 
   return (
-    <div className="md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4 max-h-[540px]">
+    <div className="md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4 md:max-h-[540px]">
       <section className="max-w-6xl mx-auto">
         <h2 className="h6 mb-4">Mis Pedidos</h2>
         
