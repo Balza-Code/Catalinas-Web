@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {
-  Line,
-  LineChart,
+  Area,
+  AreaChart,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -40,24 +40,29 @@ const Dashboard = ({ orders }) => {
       (o) => o.tipoVenta === "Venta Detal"
     ).length;
 
+    // Total de cuentas por cobrar (dinero en la calle)
+    const totalCuentasPorCobrar = orders.reduce(
+      (sum, order) => sum + (Number(order.total) - Number(order.pagado || 0)),
+      0
+    );
+
     return {
       totalRevenue,
       totalSales,
       onlineSales,
       detalSales,
+      totalCuentasPorCobrar,
     };
   }, [orders]); // El cálculo se vuelve a ejecutar solo si 'orders' cambia
 
-  // Generar datos para el gráfico a partir de los pedidos entregados
+  // Generar datos para el gráfico a partir de los pedidos
   const chartData = useMemo(() => {
     if (!orders || orders.length === 0) return [];
 
-    const revenueStatuses = ["Entregado", "Pago Completado"];
-    // Map key: yyyy-mm (for sorting), value: { revenue, date }
+    // Map key: yyyy-mm (for sorting), value: { ventasGeneradas, dineroRecibido, date }
     const map = new Map();
 
     orders.forEach((o) => {
-      if (!revenueStatuses.includes(o.estado)) return;
       const dateRaw = o.createdAt || o.fecha || o.date;
       let d = null;
       if (dateRaw) {
@@ -76,30 +81,33 @@ const Dashboard = ({ orders }) => {
       });
 
       const prev = map.get(key) || {
-        revenue: 0,
+        ventasGeneradas: 0,
+        dineroRecibido: 0,
         label,
         date: new Date(year, month - 1, 1),
       };
-      prev.revenue += Number(o.total) || 0;
+      prev.ventasGeneradas += Number(o.total) || 0;
+      prev.dineroRecibido += Number(o.pagado || 0);
       map.set(key, prev);
     });
 
     // Convert map to sorted array by month
     const arr = Array.from(map.entries())
-      .map(([key, { revenue, label, date }]) => ({
+      .map(([key, { ventasGeneradas, dineroRecibido, label, date }]) => ({
         key,
         name: label,
-        revenue,
+        ventasGeneradas,
+        dineroRecibido,
         date,
       }))
       .sort((a, b) => a.date - b.date)
-      .map(({ name, revenue }) => ({ name, revenue }));
+      .map(({ name, ventasGeneradas, dineroRecibido }) => ({ name, ventasGeneradas, dineroRecibido }));
 
     if (arr.length === 0) {
       return [
-        { name: "Ene", revenue: 0 },
-        { name: "Feb", revenue: 0 },
-        { name: "Mar", revenue: 0 },
+        { name: "Ene", ventasGeneradas: 0, dineroRecibido: 0 },
+        { name: "Feb", ventasGeneradas: 0, dineroRecibido: 0 },
+        { name: "Mar", ventasGeneradas: 0, dineroRecibido: 0 },
       ];
     }
 
@@ -122,12 +130,18 @@ const Dashboard = ({ orders }) => {
     
     md:grid 
     md:grid-cols-2      
-    lg:grid-cols-4      
+    lg:grid-cols-5      
     md:overflow-visible 
     md:mx-0 md:px-0     
     md:pb-0
     md:mt-0             "
       >
+        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Total de Cuentas por Cobrar</h3>
+          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
+            ${stats.totalCuentasPorCobrar.toFixed(2)}
+          </p>
+        </div>
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
           <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Ingresos Totales</h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
@@ -159,17 +173,28 @@ const Dashboard = ({ orders }) => {
         {/* Gráfico */}
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-xl md:text-base font-dm-sans font-medium text-left text-gray-600 mb-4 lg:text-left">
-            Rendimiento Mensual
+            Rendimiento Mensual: Ventas vs Pagos
           </h3>
           <div className="w-full h-72 md:h-[90%] pr-8">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="ventasGeneradas" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="dineroRecibido" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="revenue" stroke="#c084fc" />
-              </LineChart>
+                <Area type="monotone" dataKey="ventasGeneradas" stroke="#c084fc" fillOpacity={1} fill="url(#ventasGeneradas)" />
+                <Area type="monotone" dataKey="dineroRecibido" stroke="#10b981" fillOpacity={1} fill="url(#dineroRecibido)" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { MobileOrderCard } from "./MobileOrderCard";
 import { OrderCard } from "./OrderCard";
 
 
-export const OrderList = ({ orders = [], onUpdateOrder, onReceiptUploaded }) => {
+export const OrderList = ({ orders = [], onUpdateOrder, onReceiptUploaded, onDeleteOrder }) => {
   return (
 
     <div className="w-full">
@@ -14,6 +14,7 @@ export const OrderList = ({ orders = [], onUpdateOrder, onReceiptUploaded }) => 
             order={order}
             onUpdateOrder={onUpdateOrder}
             onReceiptUploaded={onReceiptUploaded}
+            onDeleteOrder={onDeleteOrder}
           />
         ))}
       </div>
@@ -38,6 +39,7 @@ export const OrderList = ({ orders = [], onUpdateOrder, onReceiptUploaded }) => 
         order={order}
         onUpdateOrder={onUpdateOrder}
         onReceiptUploaded={onReceiptUploaded}
+        onDeleteOrder={onDeleteOrder}
         />
     ))}
   </tbody>

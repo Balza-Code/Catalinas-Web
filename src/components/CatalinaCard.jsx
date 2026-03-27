@@ -29,7 +29,7 @@ function CatalinaCard({
             <img
               src={catalina.imageUrl}
               alt={catalina.nombre}
-              className="min-w-[150x]"
+              className=""
             />
           </div>
         ) : (
@@ -117,7 +117,7 @@ function CatalinaCard({
         {editingId === catalina._id ? (
           <div></div>
         ) : (
-          <div className="flex gap-1 mt-1">
+          <div className="flex flex-col md:flex-row gap-1 mt-1 w-full">
             <button
               className=" px-4 py-2 bg-amber-300 hover:bg-amber-500 text-gray-50 rounded-lg b2"
               onClick={() => onEditClick(catalina)}

@@ -6,7 +6,7 @@ import Dots from "../Icons/dots.svg"
 import { useModal } from "../context/ModalContext";
 
 
-export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
+export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded, onDeleteOrder }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
   const [comprobanteUrl, setComprobanteUrl] = useState(order.comprobanteUrl);
   const [nota, setNota] = useState(order.notas || "");
@@ -150,6 +150,21 @@ export const OrderCard = ({ order, onUpdateOrder, onReceiptUploaded }) => {
             className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
           >
             Cancelar Pedido
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              
+                if (window.confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
+                  onDeleteOrder(order._id);
+                  console.log('ID que envío al backend', order._id)
+                  setIsModalOpen(false);
+                }
+              }
+            }
+            className="w-full py-3 md:py-4 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
+          >
+            Eliminar Pedido
           </button>
         </div>
       )}

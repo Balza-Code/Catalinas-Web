@@ -129,3 +129,24 @@ export async function uploadReceipt(req, res) {
     });
   }
 }
+
+export async function deleteOrder(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Solo admin puede eliminar pedidos
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ mensaje: "Acceso denegado. Solo administradores pueden eliminar pedidos." });
+    }
+
+    const pedidoEliminado = await Order.findByIdAndDelete(id);
+
+    if (!pedidoEliminado) {
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+
+    res.json({ mensaje: "Pedido eliminado exitosamente" });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al eliminar el pedido", error });
+  }
+}

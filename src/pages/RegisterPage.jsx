@@ -22,7 +22,7 @@ export const RegisterPage = () => {
       // Mostramos modal de registro correcto y redirigimos al login
       showModal({
         title: 'Registro completo',
-        message: 'Te has registrado correctamente. Serás redirigido al login.',
+        message: 'Te has registrado correctamente. Debes dirigirte al login.',
         onClose: () => navigate('/login')
       });
     } catch (err) {

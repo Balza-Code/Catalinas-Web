@@ -31,7 +31,7 @@ function AdminLayout() {
             <span></span>
           </header>
         )}
-        <div className=" md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4">
+        <div className=" md:mt-0 z-20 max-h-full bg-[#f5f0e6]">
 
         <Outlet />
         </div>

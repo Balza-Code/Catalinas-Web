@@ -14,6 +14,10 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    pagado: {
+      type: Number,
+      default: 0,
+    },
     clienteNombre: {
       type: String,
       required: true,

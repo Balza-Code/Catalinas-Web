@@ -2,6 +2,7 @@ import React from 'react'
 import { OrderList } from '../components/OrderList'
 import useOrders from '../hooks/useOrders';
 import { updateOrder } from '../services/orderService';
+import { deleteOrder } from '../services/orderService';
 
 export const HistorialDePedidosPage = () => {
   const { orders, setOrders } = useOrders();
@@ -35,6 +36,7 @@ export const HistorialDePedidosPage = () => {
     <OrderList orders={orders}
            onUpdateOrder={handleUpdateOrder}
            onReceiptUploaded={handleReceiptUploaded}
+           onDeleteOrder={deleteOrder}
            />
     </div>
   )

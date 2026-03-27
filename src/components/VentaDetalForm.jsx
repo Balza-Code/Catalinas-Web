@@ -89,9 +89,9 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
 
 
   return (
-    <div className="md:grid md:grid-cols-2 gap-2 w-full bg-[#f5f0e6]">
+    <div className="md:grid md:grid-cols-2  w-full bg-[#f5f0e6]">
       {/* 🟦 Sección de Productos */}
-      <div className="col-span-1 rounded-lg border border-gray-200  overflow-y-auto p-4 md:max-h-[565px] bg-white no-scrollbar">
+      <div className="col-span-1 border-gray-200  overflow-y-auto p-4 md:max-h-[565px] bg-white no-scrollbar">
         <h3 className="h6 text-gray-600 mb-4">Productos Disponibles</h3>
         <div className="grid grid-cols-2 gap-4 ">
           {catalinas.map((c) => (
@@ -104,7 +104,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
                   <img
                     src={c.imageUrl}
                     alt={c.nombre}
-                    className="min-w-[150x]"
+                    className=""
                   />
                 )}
               </div>
@@ -138,7 +138,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
       </button>
 
       {/* 🟨 Sección del Carrito */}
-      <div className={`fixed inset-0 z-50 flex flex-col transition-transform duration-200 ease-in-out ${isMobileCartOpen ? 'translate-y-0' : 'translate-y-[2000px]'} md:col-span-1 md:translate-y-0 md:static  rounded-lg border border-gray-200  overflow-y-auto p-4 max-h-[565px] bg-white`}>
+      <div className={`fixed inset-0 z-50 flex flex-col transition-transform duration-200 ease-in-out ${isMobileCartOpen ? 'translate-y-0' : 'translate-y-[2000px]'} md:col-span-1 md:translate-y-0 md:static border-gray-200  overflow-y-auto p-4 max-h-[565px] bg-white`}>
         <div className="md:hidden bg-white p-4 shadow-sm flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Tu Pedido</h2>
             <button onClick={() => setIsMobileCartOpen(false)} className="p-2 bg-gray-100 rounded-full">

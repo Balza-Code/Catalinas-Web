@@ -6,7 +6,8 @@ import {
   createOrder,
   getAllOrders,
   updateOrder,
-  uploadReceipt
+  uploadReceipt,
+  deleteOrder
 } from "../controllers/orderController.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -36,6 +37,7 @@ const upload = multer({
 router.get("/", protect, getAllOrders);
 router.post("/", protect, createOrder);
 router.patch("/:id", protect, adminOnly, updateOrder);
+router.delete("/:id", protect, adminOnly, deleteOrder);
 
 // La ruta de subida de archivos también llama a su función de controlador
 router.post(

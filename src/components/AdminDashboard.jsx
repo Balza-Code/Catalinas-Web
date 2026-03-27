@@ -2,11 +2,13 @@ import React from 'react';
 import { useCatalinas } from "../hooks/useCatalinas";
 import useOrders from "../hooks/useOrders";
 import { deleteCatalina, updateCatalina } from "../services/catalinaService";
-import { updateOrder } from "../services/orderService";
+import { updateOrder, deleteOrder } from "../services/orderService";
 
 // Importa las funciones de los servicios que necesitarás para modificar datos
 
 import Dashboard from "./Dashboard";
+import ClientDirectory from '../pages/ClientDirectory';
+import { OrderList } from './OrderList';
 // (Aqui tambien importarías los servicios para catalinas si vas a editarlas desde aqui)
 
 // Importa los componentes visuales
@@ -25,12 +27,32 @@ function AdminDashboard() {
 
   
   
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await deleteOrder(orderId);
+      setOrders((prev) => prev.filter((order) => order._id !== orderId));
+    } catch (error) {
+      console.error("Error eliminando pedido:", error);
+      alert("Error al eliminar el pedido");
+    }
+  };
 
   return (
     <div className='general-layout'>
     {/* <PaymentAlerts orders={orders} /> */}
 
       <Dashboard orders={orders} />
+
+      <ClientDirectory/>
+
+      {/* <div className="admin-section">
+        <h2>Historial de Pedidos y Ventas</h2>
+        <OrderList orders={orders}
+         onUpdateOrder={handleUpdateOrder}
+         onReceiptUploaded={handleReceiptUploaded}
+         onDeleteOrder={handleDeleteOrder}
+         />
+      </div> */}
 
       
 
@@ -72,6 +94,7 @@ function AdminDashboard() {
           <OrderList orders={orders}
            onUpdateOrder={handleUpdateOrder}
            onReceiptUploaded={handleReceiptUploaded}
+           onDeleteOrder={handleDeleteOrder}
            /> */}
 
         </div>

@@ -10,6 +10,7 @@ export const MobileOrderCard = ({
   order,
   onUpdateOrder,
   onReceiptUploaded,
+  onDeleteOrder,
 }) => {
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin";
@@ -196,6 +197,20 @@ export const MobileOrderCard = ({
                     className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
                   >
                     Cancelar Pedido
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof onDeleteOrder === 'function') {
+                        if (window.confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
+                          onDeleteOrder(order._id);
+                          setIsModalOpen(false);
+                        }
+                      }
+                    }}
+                    className="w-full py-3 md:py-4 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
+                  >
+                    Eliminar Pedido
                   </button>
                 </div>
               )}

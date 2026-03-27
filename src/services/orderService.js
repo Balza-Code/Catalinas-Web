@@ -1,9 +1,9 @@
-// const API_URL = "http://localhost:4000/api/orders";
+const API_URL = "http://localhost:4000/api/orders";
 // src/services/orderService.js
 
 // Vite inyectará automáticamente la URL correcta dependiendo de dónde esté corriendo
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const API_URL = `${BASE_URL}/orders`;
+// const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// const API_URL = `${BASE_URL}/orders`;
 
 // ... resto del código
 
@@ -75,4 +75,22 @@ export const uploadReceipt = async (orderId, formData) => {
   });
   if (!response.ok) throw new Error('Error al subir el comprobante');
   return await response.json();
-}
+};
+
+export const deleteOrder = async (id) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    let errMsg = `Error al eliminar el pedido (status ${response.status})`;
+    try {
+      const data = await response.json();
+      if (data && data.mensaje) errMsg = data.mensaje;
+    } catch (e) {
+      // ignore JSON parse errors
+    }
+    throw new Error(errMsg);
+  }
+  return await response.json();
+};
