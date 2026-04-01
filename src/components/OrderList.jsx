@@ -40,6 +40,7 @@ export const OrderList = ({ orders = [], onUpdateOrder, onReceiptUploaded, onDel
         onUpdateOrder={onUpdateOrder}
         onReceiptUploaded={onReceiptUploaded}
         onDeleteOrder={onDeleteOrder}
+        
         />
     ))}
   </tbody>

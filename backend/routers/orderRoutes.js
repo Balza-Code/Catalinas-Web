@@ -7,7 +7,8 @@ import {
   getAllOrders,
   updateOrder,
   uploadReceipt,
-  deleteOrder
+  deleteOrder,
+  // migrarCostosViejos
 } from "../controllers/orderController.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -33,10 +34,10 @@ const upload = multer({
   }
 });
 
-
+// router.get('/migrar-costos', migrarCostosViejos);
 router.get("/", protect, getAllOrders);
 router.post("/", protect, createOrder);
-router.patch("/:id", protect, adminOnly, updateOrder);
+router.patch("/:id", protect, updateOrder);
 router.delete("/:id", protect, adminOnly, deleteOrder);
 
 // La ruta de subida de archivos también llama a su función de controlador

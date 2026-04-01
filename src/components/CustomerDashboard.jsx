@@ -1,48 +1,82 @@
-// src/pages/CustomerDashboard.jsx
-import { OrderList } from '../components/OrderList';
-import OrderSection from '../components/OrderSection';
-import { useCatalinas } from '../hooks/useCatalinas';
-import useOrders from '../hooks/useOrders';
-import { createOrder } from '../services/orderService';
+import { OrderList } from "../components/OrderList";
+import useOrders from "../hooks/useOrders";
+// 1. IMPORTA LA FUNCIÓN QUE HABLA CON EL BACKEND (Asegúrate de que la ruta sea correcta)
+import { updateOrder } from "../services/orderService";
+import { useModal } from "../context/ModalContext"; // Para los mensajitos
 
 function CustomerDashboard() {
-  const { catalinas } = useCatalinas();
-  // 1. Asegúrate de estar obteniendo 'setOrders' del hook
   const { orders, setOrders } = useOrders();
+  const { showModal } = useModal();
 
-  // 2. ASEGÚRATE DE QUE ESTA FUNCIÓN EXISTE.
-  // Esta es la función que recibe el aviso del componente OrderSection
-  const handleOrderPlaced = async (orderData) => {
-  const newOrder = await createOrder(orderData); // ✅ backend lo devuelve con createdAt
-  setOrders([newOrder, ...orders]); // ✅ ahora sí tiene fecha válida
-  return newOrder; // ✅ esto permite que OrderSection lo reciba completo
-};
+  // Esta función SÍ hace la llamada al servidor
+  const handleUpdateOrder = async (orderId, updateData) => {
+    console.log(
+      "🛠️ 1. Dashboard recibió la orden de actualizar:",
+      orderId,
+      updateData,
+    );
 
+    try {
+      console.log("📡 2. Intentando llamar al servicio 'updateOrder'...");
+      const response = await updateOrder(orderId, updateData);
 
-  // --- NUEVA FUNCIÓN (idéntica a la del Admin) ---
+      console.log("✅ 3. El servidor respondió con éxito:", response);
+
+      const updatedObject = Array.isArray(response)
+        ? response.find((o) => o._id === orderId)
+        : response;
+
+      if (updatedObject) {
+        console.log(
+          "✨ 4. Actualizando la lista de pedidos en pantalla con:",
+          updatedObject.estado,
+        );
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, ...updatedObject } : order,
+          ),
+        );
+
+        if (updateData.estado === "Cancelado") {
+          showModal({
+            title: "Pedido Cancelado",
+            message: "El pedido ha sido cancelado exitosamente.",
+          });
+        }
+      } else {
+        console.warn(
+          "⚠️ 5. Se recibió respuesta pero no se encontró el pedido con ID:",
+          orderId,
+        );
+      }
+    } catch (error) {
+      console.error("🚨 6. ERROR CAPTURADO EN EL DASHBOARD:", error);
+      showModal({
+        title: "Error",
+        message: "No se pudo cancelar el pedido: " + error.message,
+      });
+    }
+  };
+
   const handleReceiptUploaded = (updatedOrder) => {
-    setOrders(orders.map(order => 
-      order._id === updatedOrder._id ? updatedOrder : order
-    ));
+    setOrders(
+      orders.map((order) =>
+        order._id === updatedOrder._id ? updatedOrder : order,
+      ),
+    );
   };
 
   return (
-    <div className="customer-dashboard">
-      <OrderSection
-        catalinas={catalinas}
-        // 4. Asegúrate de estar pasando la función como prop
-        onOrderPlace={handleOrderPlaced}
-      />
-      <hr />
-      <div className="admin-section">
-        <h2>Mis Pedidos</h2>
-        {console.log('Renderizando lista de pedidos:', orders)} {/* Tu console.log */}
+    <div className="md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4 md:max-h-[540px]">
+      <section className="max-w-6xl mx-auto">
+        <h2 className="h6 mb-4">Mis Pedidos</h2>
+
         <OrderList
           orders={orders}
-           // Correcto, los clientes no actualizan
           onReceiptUploaded={handleReceiptUploaded}
+          onUpdateOrder={handleUpdateOrder} // ✅ ¡CABLE AL ENCHUFE CORRECTO!
         />
-      </div>
+      </section>
     </div>
   );
 }

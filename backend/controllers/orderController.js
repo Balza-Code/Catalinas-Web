@@ -1,6 +1,8 @@
 import cloudinary from "cloudinary";
 import streamifier from "streamifier";
+import bcrypt from "bcryptjs";
 import Order from "../models/order.js";
+import User from "../models/user.js";
 
 const { v2: cloudinaryV2 } = cloudinary;
 
@@ -8,9 +10,13 @@ export async function getAllOrders(req, res) {
   try {
     let pedidos;
 
-    // El middleware 'protec' nos dió req.user
+    // El middleware 'protect' nos dió req.user
     if (req.user.role === "admin") {
-      pedidos = await Order.find().sort({ createdAt: -1 });
+      if (req.query.user) {
+        pedidos = await Order.find({ user: req.query.user }).sort({ createdAt: -1 });
+      } else {
+        pedidos = await Order.find().sort({ createdAt: -1 });
+      }
     } else {
       pedidos = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
     }
@@ -21,12 +27,75 @@ export async function getAllOrders(req, res) {
   }
 }
 
+function normalizeText(text = "") {
+  return text.trim().toLowerCase();
+}
+
+function normalizeEmailName(text = "") {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+}
+
 export async function createOrder(req, res) {
   try {
-    const nuevoPedido = new Order({
-      ...req.body, // Trae todo del formulario
-      user: req.user.id, // <-- Asigna el ID del usuario logueado
-    });
+    const { tipoVenta, clienteNombre } = req.body;
+    let orderUserId = req.user.id;
+
+    if (tipoVenta === "detal") {
+      const nombreCliente = (clienteNombre || "").trim();
+
+      if (!nombreCliente) {
+        return res.status(400).json({ mensaje: "clienteNombre es requerido para ventas al detal" });
+      }
+
+      const normalizedNombre = normalizeText(nombreCliente);
+      const existingUser = await User.findOne({
+        nombre: { $regex: new RegExp(`^${normalizedNombre.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}$`, "i") },
+      });
+
+      if (existingUser) {
+        orderUserId = existingUser._id;
+      } else {
+        const randomPassword = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        const emailName = normalizeEmailName(nombreCliente) || "cliente";
+        const tempEmail = `detal_${emailName}_${Date.now()}@catalinas.com`;
+
+        const newUser = new User({
+          nombre: nombreCliente,
+          email: tempEmail,
+          password: hashedPassword,
+          role: "cliente",
+          createdByAdmin: true,
+        });
+
+        await newUser.save();
+        orderUserId = newUser._id;
+      }
+    }
+
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const costoTotalProduccion = items.reduce((acc, item) => {
+      const cantidad = Number(item.cantidad) || 0;
+      const costo = Number(item.costoProduccion) || 0;
+      return acc + costo * cantidad;
+    }, 0);
+
+    const orderData = {
+      ...req.body,
+      user: orderUserId,
+      items,
+      costoTotalProduccion,
+    };
+
+    if (req.user.role === "admin" && req.body.user) {
+      orderData.user = req.body.user;
+    }
+
+    const nuevoPedido = new Order(orderData);
     await nuevoPedido.save();
     res.status(201).json(nuevoPedido);
   } catch (error) {
@@ -38,6 +107,27 @@ export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const { estado, notas } = req.body; // Aceptamos 'estado' O 'notas'
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+
+    const isAdmin = req.user.role === "admin";
+    const isOwner = order.user.toString() === req.user.id;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ mensaje: "Acceso denegado. No eres el propietario de este pedido." });
+    }
+
+    if (!isAdmin && typeof estado !== "undefined") {
+      if (estado !== "Cancelado") {
+        return res.status(403).json({ mensaje: "Solo el administrador puede cambiar el estado a este valor." });
+      }
+      if (order.estado !== "Pendiente") {
+        return res.status(403).json({ mensaje: "Solo se puede cancelar un pedido que aún esté pendiente." });
+      }
+    }
 
     const fieldsToUpdate = {};
 
@@ -148,5 +238,54 @@ export async function deleteOrder(req, res) {
     res.json({ mensaje: "Pedido eliminado exitosamente" });
   } catch (error) {
     res.status(500).json({ mensaje: "Error al eliminar el pedido", error });
+  }
+}
+
+export async function migrarCostosViejos(req, res) {
+  try {
+    const pedidos = await Order.find();
+    let actualizados = 0;
+
+    for (let pedido of pedidos) {
+      let seModifico = false;
+      let costoTotalCalculado = 0;
+
+      if (pedido.items && pedido.items.length > 0) {
+        pedido.items.forEach(item => {
+          // 1. Si al item le falta el costo, se lo ponemos para pasar la validación
+          if (item.costoProduccion === undefined || item.costoProduccion === null) {
+            item.costoProduccion = 0.91; // Valor por defecto de la Catalina Blanca
+            seModifico = true;
+          }
+          
+          // Sumamos a la calculadora total
+          const costo = Number(item.costoProduccion) || 0.91;
+          const cantidad = Number(item.cantidad) || 1;
+          costoTotalCalculado += (costo * cantidad);
+        });
+      }
+
+      // 2. Si arreglamos algún item, o si faltaba el total general, lo guardamos
+      if (!pedido.costoTotalProduccion || pedido.costoTotalProduccion === 0 || seModifico) {
+        pedido.costoTotalProduccion = costoTotalCalculado;
+        
+        // Mongoose requiere que le avisemos si modificamos arrays directamente a veces
+        pedido.markModified('items'); 
+        
+        await pedido.save(); // ¡Ahora Mongoose nos dejará pasar!
+        actualizados++;
+      }
+    }
+
+    res.json({ 
+      exito: true,
+      mensaje: "¡Migración completada con éxito! 🚀 Mongoose está feliz.", 
+      pedidosRevisados: pedidos.length,
+      pedidosArreglados: actualizados 
+    });
+
+  } catch (error) {
+    console.error("Error en migración:", error);
+    res.status(500).json({ error: error.message });
   }
 }

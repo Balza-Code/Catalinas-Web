@@ -12,8 +12,8 @@ export default function Modal({ open = true, title, message, onClose = () => {},
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-[1px]" onClick={onClose}>
-      <div className="bg-gray-50 rounded-lg shadow-lg p-6 w-full max-w-lg relative animate-fade-in flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="max-h-9/12 overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 w-full max-w-3xl relative animate-fade-in flex flex-col" onClick={(e) => e.stopPropagation()}>
         {title && <h2 className="h6 text-gray-600 mb-4">{title}</h2>}
 
         {children ? (

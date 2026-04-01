@@ -8,11 +8,21 @@ const orderSchema = new mongoose.Schema(
         nombre: String,
         precio: Number,
         cantidad: Number,
+        costoProduccion: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
       },
     ],
     total: {
       type: Number,
       required: true,
+    },
+    costoTotalProduccion: {
+      type: Number,
+      required: true,
+      min: 0,
     },
     pagado: {
       type: Number,

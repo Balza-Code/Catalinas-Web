@@ -61,6 +61,7 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
         nombre: item.nombre,
         precio: item.precio,
         cantidad: item.cantidad,
+        costoProduccion: item.costoProduccion || 0,
       })),
       total: calculateTotal(),
       tipoVenta: "Venta Detal", // <-- marcamos el tipo de venta

@@ -74,6 +74,7 @@ export default function OrderSection({ catalinas = [], onOrderPlace }) {
         nombre: item.nombre,
         precio: item.precio,
         cantidad: item.cantidad,
+        costoProduccion: item.costoProduccion || 0,
       })),
       total: parseFloat(calculateTotal()),
       tipoVenta: "Pedido Online",

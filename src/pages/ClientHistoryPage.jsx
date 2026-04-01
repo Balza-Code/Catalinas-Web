@@ -3,12 +3,14 @@ import { OrderList } from '../components/OrderList';
 import OrderSection from '../components/OrderSection';
 import { useCatalinas } from '../hooks/useCatalinas';
 import useOrders from '../hooks/useOrders';
-import { createOrder } from '../services/orderService';
+import { createOrder, updateOrder } from '../services/orderService';
+import { useModal } from '../context/ModalContext';
 
 function CustomerDashboard() {
   
   // 1. Asegúrate de estar obteniendo 'setOrders' del hook
   const { orders, setOrders } = useOrders();
+  const { showModal } = useModal()
 
   
 
@@ -19,6 +21,37 @@ function CustomerDashboard() {
     ));
   };
 
+  const handleUpdateOrder = async (orderId, updateData) => {
+    console.log("🛠️ 1. Dashboard recibió la orden de actualizar:", orderId, updateData);
+    
+    try {
+      console.log("📡 2. Intentando llamar al servicio 'updateOrder'...");
+      const response = await updateOrder(orderId, updateData); 
+      
+      console.log("✅ 3. El servidor respondió con éxito:", response);
+      
+      const updatedObject = Array.isArray(response) 
+        ? response.find(o => o._id === orderId) 
+        : response;
+
+      if (updatedObject) {
+        console.log("✨ 4. Actualizando la lista de pedidos en pantalla con:", updatedObject.estado);
+        setOrders(prevOrders => prevOrders.map(order => 
+          order._id === orderId ? { ...order, ...updatedObject } : order
+        ));
+        
+        if (updateData.estado === "Cancelado") {
+           showModal({ title: 'Pedido Cancelado', message: 'El pedido ha sido cancelado exitosamente.' });
+        }
+      } else {
+        console.warn("⚠️ 5. Se recibió respuesta pero no se encontró el pedido con ID:", orderId);
+      }
+    } catch (error) {
+      console.error("🚨 6. ERROR CAPTURADO EN EL DASHBOARD:", error);
+      showModal({ title: 'Error', message: 'No se pudo cancelar el pedido: ' + error.message });
+    }
+  };
+
   return (
     <div className="md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4 md:max-h-[540px]">
       <section className="max-w-6xl mx-auto">
@@ -27,6 +60,7 @@ function CustomerDashboard() {
         <OrderList
           orders={orders}
           onReceiptUploaded={handleReceiptUploaded}
+          onUpdateOrder={handleUpdateOrder}
         />
       </section>
     </div>

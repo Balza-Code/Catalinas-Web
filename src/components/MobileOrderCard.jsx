@@ -48,6 +48,15 @@ export const MobileOrderCard = ({
     onUpdateOrder(order._id, { estado: newStatus });
   };
 
+  const handleCancelOrder = () => {
+    if (!window.confirm("¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    if (typeof onUpdateOrder === "function") {
+      onUpdateOrder(order._id, { estado: "Cancelado" });
+    }
+  };
+
   const handleReceiptUploaded = (updateOrder) => {
     setComprobanteUrl(updateOrder.comprobanteUrl);
     // Propaga el cambio hacia el padre si fue provisto (para actualizar la lista global)
@@ -214,6 +223,18 @@ export const MobileOrderCard = ({
                   </button>
                 </div>
               )}
+
+            {!isAdmin && order.estado === "Pendiente" && (
+              <div className="space-y-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCancelOrder}
+                  className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
+                >
+                  Cancelar Pedido
+                </button>
+              </div>
+            )}
 
             {/* --- NOTAS DEL PEDIDO --- */}
             <div className="pt-2">

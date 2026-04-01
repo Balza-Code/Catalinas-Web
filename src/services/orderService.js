@@ -33,6 +33,14 @@ export const getOrders = async () => {
   return await response.json();
 };
 
+export const getOrdersByUser = async (userId) => {
+  const response = await fetch(`${API_URL}?user=${encodeURIComponent(userId)}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error("Error al obtener los pedidos del cliente");
+  return await response.json();
+};
+
 export const createOrder = async (orderData) => {
   const response = await fetch(API_URL, {
     method: "POST",

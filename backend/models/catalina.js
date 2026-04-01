@@ -12,6 +12,11 @@ const catalinaSchema = new mongoose.Schema({
     required: true, //El precio es obligatorio
     min: 0   // El precio no puede ser negativo
   },
+  costoProduccion: {
+    type: Number,
+    required: true, //El costo de producción es obligatorio
+    min: 0 // El costo no puede ser negativo
+  },
   descripcion: {
     type: String,
     trim: true
