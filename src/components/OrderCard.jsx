@@ -136,6 +136,12 @@ export const OrderCard = ({
                   >
                     Ver comprobante
                   </a>
+                ) : order.metodoPago === 'Efectivo' ? (
+                  <div className="p-4 bg-green-50 rounded-xl text-center border border-green-100">
+                     <p className="text-green-700 font-medium text-sm">
+                        ✅ Pago reportado en Efectivo ({order.monedaPago || 'N/A'})
+                     </p>
+                  </div>
                 ) : (
                   <div className="p-4 bg-gray-50 rounded-xl text-center border border-gray-100">
                     <p className="text-gray-500 text-sm">

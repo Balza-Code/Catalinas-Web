@@ -76,13 +76,28 @@ export const MobileOrderCard = ({
               {order.clienteNombre}
             </p>
           </div>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-              order.estado
-            )}`}
-          >
-            {order.estado === "Pago Completado" ? "Completed" : order.estado}
-          </span>
+          {isAdmin ? (
+            <select
+              value={order.estado}
+              onChange={(e) => handleUpdateStatus(e.target.value)}
+              className={`px-3 py-1 rounded-full text-xs font-bold outline-none cursor-pointer appearance-none text-center ${getStatusColor(order.estado)}`}
+            >
+              <option value="Pendiente">Pendiente</option>
+              <option value="En preparación">En preparación</option>
+              <option value="Por Verificar">Por Verificar</option>
+              <option value="Entregado">Entregado</option>
+              <option value="Pago Completado">Completed</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          ) : (
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
+                order.estado
+              )}`}
+            >
+              {order.estado === "Pago Completado" ? "Completed" : order.estado}
+            </span>
+          )}
         </div>
 
         {/* --- PRODUCTOS --- */}
@@ -94,6 +109,15 @@ export const MobileOrderCard = ({
             </p>
           ))}
         </div>
+
+        {/* --- METADATA DE PAGO --- */}
+        {order.metodoPago && order.metodoPago !== 'N/A' && order.metodoPago !== 'Pedido Online' && (
+          <div className="mb-4 flex items-center gap-2">
+            <span className={`px-2 py-1 text-xs font-bold rounded ${order.metodoPago === 'Efectivo' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}`}>
+               {order.metodoPago === 'Efectivo' ? `💵 Efectivo (${order.monedaPago})` : `🏦 ${order.metodoPago}`}
+            </span>
+          </div>
+        )}
 
         {/* --- TOTAL Y FECHA (Grid de 2 columnas) --- */}
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -114,20 +138,26 @@ export const MobileOrderCard = ({
         </div>
 
         {/* --- FOOTER: Divisor y Acciones --- */}
-        <div className="border-t border-gray-100 pt-3 flex justify-end items-center gap-4">
-          {/* Botón Detalles (Ojo) */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-gray-400 hover:text-amber-600 transition-colors"
-          ></button>
-
-          {/* Botón Menú (3 puntos) */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <img src={Dots} alt="" className="cursor-pointer" />
-          </button>
+        <div className="border-t border-gray-100 pt-3 flex justify-between items-center gap-4">
+          <div>
+            {!isAdmin && order.estado === "Pendiente" && (
+              <button
+                type="button"
+                onClick={handleCancelOrder}
+                className="text-red-500 font-medium text-sm hover:text-red-700 transition"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="text-amber-500 font-semibold text-sm transition-colors"
+            >
+              Ver Detalles
+            </button>
+          </div>
         </div>
       </div>
       {/* --- MODAL (Reutilizamos tu lógica existente) --- */}
@@ -153,6 +183,12 @@ export const MobileOrderCard = ({
               >
                 Ver comprobante
               </a>
+            ) : order.metodoPago === 'Efectivo' ? (
+              <div className="p-4 bg-green-50 rounded-xl text-center border border-green-100">
+                  <p className="text-green-700 font-medium text-sm">
+                    ✅ Pago reportado en Efectivo ({order.monedaPago || 'N/A'})
+                  </p>
+              </div>
             ) : (
               <div className="p-4 bg-gray-50 rounded-xl text-center border border-gray-100">
                 <p className="text-gray-500 text-sm">
