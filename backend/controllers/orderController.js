@@ -1,7 +1,7 @@
 import cloudinary from "cloudinary";
 import streamifier from "streamifier";
 import bcrypt from "bcryptjs";
-import Order from "../models/Order.js";
+import Order from "../models/order.js";
 import User from "../models/user.js";
 
 const { v2: cloudinaryV2 } = cloudinary;
