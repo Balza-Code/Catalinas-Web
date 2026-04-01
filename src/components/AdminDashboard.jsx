@@ -9,8 +9,6 @@ import { updateOrder, deleteOrder } from "../services/orderService";
 import Dashboard from "./Dashboard";
 import ClientDirectory from '../pages/ClientDirectory';
 import { OrderList } from './OrderList';
-import InvestmentCalculator from './InvestmentCalculator';
-import FinancialDashboard from './FinancialDashboard';
 // (Aqui tambien importarías los servicios para catalinas si vas a editarlas desde aqui)
 
 // Importa los componentes visuales
@@ -44,10 +42,6 @@ function AdminDashboard() {
     {/* <PaymentAlerts orders={orders} /> */}
 
       <Dashboard orders={orders} />
-
-      <InvestmentCalculator />
-
-      <FinancialDashboard/>
 
       {/* <div className="admin-section">
         <h2>Historial de Pedidos y Ventas</h2>

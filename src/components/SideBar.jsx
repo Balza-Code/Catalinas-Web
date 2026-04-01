@@ -12,6 +12,8 @@ export const SideBar = ({ logout }) => {
     { id: 'Directorio de Clientes', icon: UserIcon, path: '/admin/clientes' },
     { id: 'Agregar Productos', icon: AddIcon, path: '/admin/productos' },
     { id: 'Historial de Pedidos', icon: HistoryIcon, path: '/admin/historial' },
+    { id: 'Finanzas', icon: BoardIcon, path: '/admin/finanzas' },
+    { id: 'Calculadora', icon: SalesIcon, path: '/admin/calculadora' },
   ];
 
   return (

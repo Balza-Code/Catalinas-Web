@@ -16,8 +16,10 @@ import RequireAuth from './components/RequireAuth.jsx'
 import RedirectToRole from './components/RedirectToRole.jsx'
 import CustomerLayout from './components/layout/CustomerLayout.jsx';
 import CustomerNewOrderPage from './pages/CustomerNewOrder.jsx'
-import ClientHistoryPage from './pages/ClientHistoryPage.jsx'
-import ClientDirectory from './pages/ClientDirectory.jsx'
+import ClientHistoryPage from './pages/ClientHistoryPage.jsx';
+import ClientDirectory from './pages/ClientDirectory.jsx';
+import InvestmentCalculator from './components/InvestmentCalculator.jsx';
+import FinancialDashboard from './components/FinancialDashboard.jsx';
 import { HashRouter } from 'react-router-dom';
 
 const protectedRoutes = {
@@ -32,7 +34,9 @@ const protectedRoutes = {
     { path: 'ventas-detal', element: <VentaAlDetalPage/> },
     { path: 'productos', element: <AgregarProductosPage/> },
     { path: 'historial', element: <HistorialDePedidosPage/> },
-    { path: 'clientes', element: <ClientDirectory/> }
+    { path: 'clientes', element: <ClientDirectory/> },
+    { path: 'finanzas', element: <FinancialDashboard/> },
+    { path: 'calculadora', element: <InvestmentCalculator/> }
   ]
 }
 
