@@ -1,119 +1,142 @@
-🥐 Proyecto Catalinas: Roadmap y Contexto
+<div align="center">
 
-Aplicación web integral para la gestión de ventas, inventario, producción y cobranza de un negocio familiar de repostería.
+🥐 Catalina's Web: Contexto y Roadmap de Desarrollo
+
+Aplicación Full Stack (MERN) para la gestión de ventas, inventario, producción y cobranza de repostería artesanal.
 
 </div>
 
-📌 Contexto del Proyecto
+## LOGROS RECIENTES
 
-👥 Usuarios Principales
+- CRM Corregido: el saldoDeudor ahora queda en $0 para pedidos en estado 'Pago Completado' o 'Cancelado'.
+- Fase 2 completada: el admin usa un `<select>` para cambiar estados de pedidos.
+- El cliente puede cancelar sus propios pedidos solo cuando están en estado 'Pendiente'.
+- Correcciones realizadas en validación de Hooks y anidamiento correcto de tablas HTML (`tbody`).
+- Migración de datos exitosa: se asignó `costoProduccion: 0.91` a pedidos antiguos.
+- Dashboard financiero refleja datos reales y muestra $76.50 en Ventas Totales este mes.
 
-Perfil
-
-Rol y Capacidades
-
-👑 Admin
-
-Gestiona productos, aprueba pagos, administra estados de pedidos, controla producción y visualiza métricas financieras.
-
-🛍️ Cliente
-
-Explora la tienda, arma pedidos personalizados, sube comprobantes de pago y visualiza su historial de compras.
+📌 1. Contexto y Arquitectura del Proyecto
 
 🛠️ Stack Tecnológico
 
-Frontend: React Tailwind CSS Redux Toolkit React Router DOM
+Frontend: React 19 + Vite, Tailwind CSS, React Router Dom, Recharts.
 
-Backend: Node.js Express MongoDB Mongoose
+Estado Global: Context API (AuthContext, ModalContext) y Custom Hooks (useAdmin, useCatalinas, useOrders).
 
-UI/UX: Bento Grid Glassmorphism Skeletons Micro-interacciones
+Backend: Node.js, Express.js.
 
-🚀 Roadmap de Mejoras (Priorizado)
+Base de Datos: MongoDB / Mongoose.
+
+Autenticación & Archivos: JWT, Multer + Cloudinary.
+
+🏗️ Reglas de Código (Para Copilot)
+
+Componentes: PascalCase (ej. AdminDashboard.jsx).
+
+Hooks: camelCase con prefijo use (ej. useOrders.js).
+
+Backend: Rutas REST montadas en /api/auth, /api/catalinas, /api/orders, /api/admin. Separación clara entre routers y controllers.
+
+Estilos: Clases utilitarias de Tailwind CSS directamente en el JSX.
+
+Idioma: Variables y funciones en inglés/español camelCase, comentarios explicativos en español.
+
+🚀 2. Roadmap de Mejoras Funcionales (Priorizado)
 
 Fase 1: Inteligencia Financiera ("El Contador Automático")
 
-Objetivo: Separar automáticamente el dinero que es ganancia del dinero que se debe reinvertir.
+Objetivo: Separar automáticamente el dinero que es ganancia del que es capital de reinversión.
 
-[ ] Añadir campo costoProduccion al modelo de Catalina y a los items dentro del modelo Order.
+Progreso: 90% (Falta desglose detallado)
 
-[ ] Crear un controlador que calcule: Ingresos Totales (pagos recibidos), Capital de Reinversión (suma de costos) y Ganancia Neta.
+[x] Modelos: Añadir campo costoProduccion al schema de Catalina y a los items de Order.
 
-[ ] Mostrar estas métricas en el Dashboard principal del Admin.
+[x] Backend: Crear controlador en adminRoutes que calcule: Ingresos Totales, Capital de Reinversión y Ganancia Neta.
+
+[x] Frontend: Actualizar useAdmin hook y mostrar estas métricas en el Dashboard usando Bento Grid.
 
 Fase 2: Control y Flexibilidad de Pedidos
 
 Objetivo: Dar margen de error y corrección tanto al admin como al cliente en el flujo de ventas.
 
-[ ] Admin: Cambiar la vista de estado de pedido a un menú desplegable (<select>) para regresar a estados anteriores previa confirmación.
+Fase 2: 100% COMPLETADA
 
-[ ] Cliente: Añadir botón de "Cancelar Pedido" (funcional únicamente si el estado es "Pendiente").
+[x] Admin: Cambiar celda de estado a un <select>. Al cambiar, abrir un modal de confirmación usando el ModalContext para revertir a estados anteriores.
+
+[x] Cliente: Añadir botón de "Cancelar Pedido" (funcional únicamente si el estado es "Pendiente") comunicándose con orderRoutes.
 
 Fase 3: Control de Cobranza (Mini CRM Base)
 
-Objetivo: Tener un control visual y estricto de los clientes que tienen pagos pendientes.
+Objetivo: Control visual y estricto de los clientes con pagos pendientes o fraccionados.
 
-[ ] Crear tabla "Directorio de Clientes" en el panel Admin.
+Progreso: 60% (Faltan filtros de búsqueda)
 
-[ ] Implementar un Endpoint con Aggregation Pipeline que cruce Usuarios con sus Pedidos para calcular el "Saldo Deudor" (Total - Pagado).
+[x ] Backend: Endpoint en adminRoutes con Aggregation Pipeline que cruce Usuarios y Pedidos para calcular el "Saldo Deudor" (Total - Pagado).
 
-[ ] Resaltar visualmente (badges rojos/verdes) a los clientes con deudas activas.
+[ x] Frontend: Crear componente ClientDirectory.jsx en pages/ consumiendo un nuevo hook useClients.
 
-Fase 4: Modernización de Interfaz (UI/UX)
+[ x] UI: Resaltar visualmente (badges rojos/verdes) a los clientes con deudas activas.
 
-Objetivo: Transmitir la sensación de una aplicación "Premium" ágil y fluida.
+## Mejoras Post-Implementación (Fases 1 y 3)
 
-[ ] Implementar ProductSkeleton (con Tailwind animate-pulse) en la tienda y paneles.
+Mejoras para la Fase 1 (Inteligencia Financiera):
 
-[ ] Aplicar estructura "Bento Grid" al Dashboard de métricas financieras.
+[ ] Desglose de Ingresos: Añadir un botón o modal en el FinancialDashboard que despliegue una lista detallada de los pedidos específicos que están sumando a los 'Ingresos Totales' y 'Capital a Reinvertir', para no tener que ir al historial general a adivinar.
 
-[ ] Mejorar los gráficos (Recharts) integrando curvas suaves (AreaChart) y degradados.
+[ ] Memoria de la Calculadora: Modificar InvestmentCalculator.jsx para que guarde los precios de los ingredientes (en localStorage o en la base de datos) y actúen como valores por defecto al entrar, evitando tener que reescribirlos desde cero cada vez.
 
-Fase 5: Sistema de Notificaciones
+Mejoras para la Fase 3 (CRM y Clientes):
 
-Objetivo: Avisar al Admin de acciones clave en tiempo real para agilizar los despachos.
+[ ] Filtros de Búsqueda: Añadir una barra de búsqueda por nombre y botones de filtro rápidos (ej. 'Todos', 'Con Deuda', 'Solventes') en ClientDirectory.jsx para manejar grandes volúmenes de clientes.
 
-[ ] Implementar campanita de notificaciones In-App en el Header del Admin.
+[x] Bugfix Saldo Deudor: Corregir la lógica matemática en el backend/frontend del CRM. Actualmente, si un cliente paga una parte o la totalidad, el sistema está duplicando o manteniendo el monto en 'Deuda Pendiente' en lugar de restarlo al total.
 
-[ ] Registrar alertas cuando un cliente suba un nuevo comprobante de pago o haga un pedido.
+Bugfixes Prioritarios (Dashboard Principal):
 
-Fase 6: Punto de Venta (POS) Dinámico
+[x] Corrección de KPIs del Dashboard: Revisar la lógica de cálculo de las tarjetas superiores ('Total de Cuentas por Cobrar' e 'Ingresos Totales'). Los números actuales están inflados o mezclando estados incorrectos.
 
-Objetivo: Agilizar las ventas al detal presenciales sin necesidad de crear combos fijos en la BD.
+[x] Corrección del Gráfico (Rendimiento Mensual): El gráfico de Recharts está mostrando dineroRecibido: 0 a pesar de existir pedidos con estado 'Pago Completado'. Actualizar el filtro de estados en el controlador que alimenta este gráfico para que coincida con la lógica usada en la Inteligencia Financiera.
 
-[ ] Crear un formulario ágil para el Admin con contadores (+/-) por unidad.
+Fase 4: Punto de Venta (POS) Dinámico
 
-[ ] Lógica para armar paquetes personalizados al instante y calcular el precio al vuelo.
+Objetivo: Agilizar ventas al detal presenciales sin crear combos fijos en BD.
 
-Fase 7: Módulo de Devoluciones
+[ ] Frontend: Crear nueva página POS.jsx con formulario ágil de contadores (+/-) por unidad.
 
-Objetivo: Mantener la integridad de las finanzas y el stock ante eventualidades.
+[ ] Lógica: Hook local para armar paquetes personalizados al instante, calcular precio y enviar a /api/orders como tipo de venta "detal".
 
-[ ] Crear el estado "Devuelto" en los pedidos.
+Fase 5: Sistema de Notificaciones en Tiempo Real
 
-[ ] Implementar lógica para decidir el reintegro de inventario (si el producto está bueno) y manejar "saldos a favor" del cliente.
+Objetivo: Avisar al Admin de acciones clave usando WebSockets.
 
-Fase 8: CRM de Clientes (Perfiles Avanzados)
+[ ] Backend/Frontend: Integrar Socket.IO al servidor Express y al layout de React.
 
-Objetivo: Centralizar la relación, historial y preferencias de cada comprador.
+[ ] UI: Implementar campanita de notificaciones In-App en el Header del Admin.
 
-[ ] Desarrollar perfiles individuales con historial histórico de compras.
+[ ] Eventos: Emitir alerta cuando un cliente suba un comprobante a Cloudinary o realice un nuevo pedido.
 
-[ ] Añadir sección de "Notas de preferencias" (ej. Le gustan más las blancas).
+Fase 6: Módulo de Devoluciones y Saldos
 
-[ ] Botón de contacto rápido por WhatsApp con mensaje pre-llenado.
+Objetivo: Mantener la integridad de inventario y caja.
 
-Fase 9: Control de Producción (Tandas)
+[ ] Crear el estado "Devuelto" en el flujo de pedidos.
 
-Objetivo: Asistir en la planificación del horneado y automatizar el inventario.
+[ ] Lógica en controlador para decidir reintegro de inventario y manejo de "saldos a favor" del cliente en su perfil.
 
-[ ] Formulario de "Inicio de Tanda": Registro de kilos de masa inicial y proyección de unidades esperadas.
+Fase 7: Control de Producción (Tandas de Horneado)
 
-[ ] Registro de "Cierre de Tanda": Unidades horneadas reales para calcular el rendimiento.
+Objetivo: Asistir en la planificación y automatizar el stock.
 
-[ ] Actualización automática del stock en la tienda en base a lo producido.
+[ ] Frontend: Formulario en panel admin para "Inicio de Tanda" (kilos de masa) y "Cierre de Tanda" (catalinas logradas).
 
-💡 Backlog de Ideas Futuras
+[ ] Backend: Actualización automática del stock global en la colección catalinas basado en el rendimiento de la tanda.
 
-[Añade aquí nuevas ideas que vayan surgiendo]
+🛠️ 3. Backlog Técnico (Deuda Técnica y Optimización)
 
-[Idea 2...]
+[ ] Implementar ProductSkeleton en components/ para estados de carga en vistas de cliente y admin.
+
+[ ] Refinar experiencia móvil (Responsive Design) en la vista de la tienda del cliente y tablas del Admin.
+
+[ ] Completar validación de datos (ej. con Zod o Express Validator) y manejo de errores estandarizado en la API.
+
+[ ] Mejorar gráficos de rendimiento usando Recharts (AreaCharts con degradados suaves).
