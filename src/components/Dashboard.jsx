@@ -20,31 +20,44 @@ const Dashboard = ({ orders }) => {
     // Considerar estados que generan ingresos: 'Entregado' y 'Pago Completado'
     const revenueStatuses = ["Entregado", "Pago Completado"];
     const deliveredOrders = orders.filter((order) =>
-      revenueStatuses.includes(order.estado)
+      revenueStatuses.includes(order.estado),
     );
 
     // Ingresos totales
-    const totalRevenue = deliveredOrders.reduce(
-      (sum, order) => sum + (Number(order.total) || 0),
-      0
-    );
+    // Ingresos totales reales (Dinero en caja/banco)
+    const totalRevenue = orders.reduce((sum, order) => {
+      if (order.estado === "Pago Completado") {
+        // Si ya está completado, asumimos que entró todo el dinero
+        return sum + (Number(order.total) || 0);
+      } else if (order.estado !== "Cancelado") {
+        // Si está en otro estado (Pendiente, Entregado, etc.), 
+        // solo sumamos lo que el cliente haya dado de abono parcial.
+        return sum + (Number(order.pagado) || 0); 
+      }
+      return sum;
+    }, 0);
 
     // Número total de ventas
     const totalSales = deliveredOrders.length;
 
     // Ventas por tipo
     const onlineSales = deliveredOrders.filter(
-      (o) => o.tipoVenta === "Pedido Online"
+      (o) => o.tipoVenta === "Pedido Online",
     ).length;
     const detalSales = deliveredOrders.filter(
-      (o) => o.tipoVenta === "Venta Detal"
+      (o) => o.tipoVenta === "Venta Detal",
     ).length;
 
     // Total de cuentas por cobrar (dinero en la calle)
-    const totalCuentasPorCobrar = orders.reduce(
-      (sum, order) => sum + (Number(order.total) - Number(order.pagado || 0)),
-      0
-    );
+    const totalCuentasPorCobrar = orders.reduce((sum, order) => {
+      // Ignoramos los cancelados y los que ya están pagados por completo
+      if (order.estado === "Cancelado" || order.estado === "Pago Completado")
+        return sum;
+
+      // La deuda es el total menos lo que ya hayan abonado
+      const deudaDelPedido = Number(order.total) - Number(order.pagado || 0);
+      return sum + deudaDelPedido;
+    }, 0);
 
     return {
       totalRevenue,
@@ -86,8 +99,20 @@ const Dashboard = ({ orders }) => {
         label,
         date: new Date(year, month - 1, 1),
       };
+
+      // Si el estado es "Pago Completado" o "Entregado", asumimos que entró la plata
+      if (o.estado === "Cancelado") return;
+
+      // Las ventas generadas son el total del pedido (lo que se facturó)
       prev.ventasGeneradas += Number(o.total) || 0;
-      prev.dineroRecibido += Number(o.pagado || 0);
+      
+      // El dinero recibido usa la misma lógica estricta que tus Ingresos Totales
+      if (o.estado === "Pago Completado") {
+        prev.dineroRecibido += Number(o.total) || 0;
+      } else {
+        prev.dineroRecibido += Number(o.pagado || 0);
+      }
+      
       map.set(key, prev);
     });
 
@@ -101,7 +126,11 @@ const Dashboard = ({ orders }) => {
         date,
       }))
       .sort((a, b) => a.date - b.date)
-      .map(({ name, ventasGeneradas, dineroRecibido }) => ({ name, ventasGeneradas, dineroRecibido }));
+      .map(({ name, ventasGeneradas, dineroRecibido }) => ({
+        name,
+        ventasGeneradas,
+        dineroRecibido,
+      }));
 
     if (arr.length === 0) {
       return [
@@ -137,31 +166,41 @@ const Dashboard = ({ orders }) => {
     md:mt-0             "
       >
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Total de Cuentas por Cobrar</h3>
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
+            Total de Cuentas por Cobrar
+          </h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
             ${stats.totalCuentasPorCobrar.toFixed(2)}
           </p>
         </div>
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Ingresos Totales</h3>
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
+            Ingresos Totales
+          </h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
             ${stats.totalRevenue.toFixed(2)}
           </p>
         </div>
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Ventas Totales</h3>
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
+            Ventas Totales
+          </h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
             {stats.totalSales}
           </p>
         </div>
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Pedidos Online Totales</h3>
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
+            Pedidos Online Totales
+          </h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
             {stats.onlineSales}
           </p>
         </div>
         <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">Pedidos al detal</h3>
+          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
+            Pedidos al detal
+          </h3>
           <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
             {stats.detalSales}
           </p>
@@ -179,21 +218,45 @@ const Dashboard = ({ orders }) => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
-                  <linearGradient id="ventasGeneradas" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0.1}/>
+                  <linearGradient
+                    id="ventasGeneradas"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0.1} />
                   </linearGradient>
-                  <linearGradient id="dineroRecibido" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  <linearGradient
+                    id="dineroRecibido"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Area type="monotone" dataKey="ventasGeneradas" stroke="#c084fc" fillOpacity={1} fill="url(#ventasGeneradas)" />
-                <Area type="monotone" dataKey="dineroRecibido" stroke="#10b981" fillOpacity={1} fill="url(#dineroRecibido)" />
+                <Area
+                  type="monotone"
+                  dataKey="ventasGeneradas"
+                  stroke="#c084fc"
+                  fillOpacity={1}
+                  fill="url(#ventasGeneradas)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="dineroRecibido"
+                  stroke="#10b981"
+                  fillOpacity={1}
+                  fill="url(#dineroRecibido)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>

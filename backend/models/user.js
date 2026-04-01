@@ -9,20 +9,36 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
+    sparse: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
   },
   password: {
     type: String,
-    required: true,
-    
+    required: false,
+  },
+  telefono: {
+    type: String,
+    default: '',
+  },
+  direccion: {
+    type: String,
+    default: '',
+  },
+  notasCRM: {
+    type: String,
+    default: '',
+  },
+  createdByAdmin: {
+    type: Boolean,
+    default: false,
   },
   role: {
     type: String,
     default: 'cliente'
-  } // Para el fututo: 'admin', 'cliente
+  } // Para el futuro: 'admin', 'cliente'
 })
 
 // Hook de Monggoose para hashear la contraeña Antes de guardarla 

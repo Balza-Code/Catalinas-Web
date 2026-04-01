@@ -17,6 +17,7 @@ import RedirectToRole from './components/RedirectToRole.jsx'
 import CustomerLayout from './components/layout/CustomerLayout.jsx';
 import CustomerNewOrderPage from './pages/CustomerNewOrder.jsx'
 import ClientHistoryPage from './pages/ClientHistoryPage.jsx'
+import ClientDirectory from './pages/ClientDirectory.jsx'
 import { HashRouter } from 'react-router-dom';
 
 const protectedRoutes = {
@@ -31,11 +32,12 @@ const protectedRoutes = {
     { path: 'ventas-detal', element: <VentaAlDetalPage/> },
     { path: 'productos', element: <AgregarProductosPage/> },
     { path: 'historial', element: <HistorialDePedidosPage/> },
+    { path: 'clientes', element: <ClientDirectory/> }
   ]
 }
 
 const router = createBrowserRouter([
-   {
+  {
     path: '/',
     element: <RedirectToRole /> // decide si va a /admin o /cliente según rol
   },
@@ -51,11 +53,8 @@ const router = createBrowserRouter([
           </RequireAuth>
     ),
     children: [
-      // Si entra a /cliente, ve el formulario de pedido
-          { index: true, element: <CustomerNewOrderPage /> },
-          
-          // Si entra a /cliente/historial, ve la lista
-          { path: 'historial', element: <ClientHistoryPage /> }
+      { index: true, element: <CustomerNewOrderPage /> },
+      { path: 'historial', element: <ClientHistoryPage /> }
     ]
   },
   protectedRoutes
