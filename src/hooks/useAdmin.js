@@ -5,6 +5,7 @@ export const useAdmin = (token) => {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const loadClientes = async () => {
@@ -27,7 +28,9 @@ export const useAdmin = (token) => {
     };
 
     loadClientes();
-  }, [token]);
+  }, [token, refreshKey]);
 
-  return { clientes, loading, error };
+  const refreshClientes = () => setRefreshKey((prev) => prev + 1);
+
+  return { clientes, loading, error, refreshClientes };
 };

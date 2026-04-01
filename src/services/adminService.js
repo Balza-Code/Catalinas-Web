@@ -14,5 +14,67 @@ export const getClientesResume = async (token) => {
   }
 
   const data = await response.json();
-  return data.data; // Asumiendo que la respuesta tiene { success: true, data: [...] }
+  console.log("--- 2. DATOS RECIBIDOS EN EL SERVICIO DE REACT ---");
+  console.log(data); // Aquí veremos si llega el JSON correcto
+
+  return data.data; 
+};
+
+export const createAdminCliente = async (token, clienteData) => {
+  const response = await fetch(`${API_BASE_URL}/admin/clientes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(clienteData),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    const mensaje = errorBody?.message || 'Error al crear el cliente';
+    throw new Error(mensaje);
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
+export const getFinancialStats = async (token, periodo) => {
+  const response = await fetch(`${API_BASE_URL}/admin/stats?periodo=${encodeURIComponent(periodo)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    const mensaje = errorBody?.message || 'Error al obtener estadísticas financieras';
+    throw new Error(mensaje);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const updateMetaGoal = async (token, metaSemanal) => {
+  const response = await fetch(`${API_BASE_URL}/admin/settings/meta`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ metaSemanal }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    const mensaje = errorBody?.message || 'Error al actualizar la meta de reinversión';
+    throw new Error(mensaje);
+  }
+
+  const data = await response.json();
+  return data;
 };
