@@ -43,6 +43,15 @@ const orderSchema = new mongoose.Schema(
       required: true,
       default: "Pedido Online",
     },
+    metodoPago: {
+      type: String,
+      default: "Transferencia/Pago Móvil"
+    },
+    monedaPago: {
+      type: String,
+      enum: ["Bs", "USD", "N/A"],
+      default: "N/A"
+    },
     comprobanteUrl: {
       type: String,
     },
@@ -61,5 +70,7 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-const Order = mongoose.model("Order", orderSchema);
+// Si el modelo ya existe en la memoria de Mongoose, lo usa. Si no, lo crea.
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+
 export default Order;

@@ -1,7 +1,7 @@
 import cloudinary from "cloudinary";
 import streamifier from "streamifier";
 import bcrypt from "bcryptjs";
-import Order from "../models/order.js";
+import Order from "../models/Order.js";
 import User from "../models/user.js";
 
 const { v2: cloudinaryV2 } = cloudinary;
@@ -194,6 +194,27 @@ export async function uploadReceipt(req, res) {
       });
     }
 
+    const { metodoPago, monedaPago } = req.body;
+
+    // Lógica para pagos en Efectivo
+    if (metodoPago === 'Efectivo') {
+      const pedidoEfectivo = await Order.findByIdAndUpdate(
+        req.params.id,
+        { 
+          metodoPago: 'Efectivo',
+          monedaPago: monedaPago || 'N/A',
+          estado: 'Por Verificar'
+        },
+        { new: true }
+      );
+      
+      if (!pedidoEfectivo) {
+        return res.status(404).json({ mensaje: "Pedido no encontrado" });
+      }
+      return res.json(pedidoEfectivo);
+    }
+
+    // Lógica para Transferencia/Pago Móvil
     if (!req.file) {
       return res.status(400).json({ mensaje: "No se subió ningún archivo" });
     }
@@ -202,7 +223,12 @@ export async function uploadReceipt(req, res) {
 
     const pedido = await Order.findByIdAndUpdate(
       req.params.id,
-      { comprobanteUrl: result.secure_url },
+      { 
+        comprobanteUrl: result.secure_url,
+        metodoPago: 'Transferencia/Pago Móvil',
+        monedaPago: 'Bs',
+        estado: 'Por Verificar'
+      },
       { new: true }
     );
 
