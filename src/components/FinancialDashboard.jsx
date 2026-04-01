@@ -102,21 +102,37 @@ export default function FinancialDashboard() {
           <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Inteligencia Financiera</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">Resumen financiero</h2>
         </div>
-        <div className="inline-flex rounded-full bg-white border border-slate-200 p-1 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setPeriodo('semana')}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'semana' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
-          >
-            Esta Semana
-          </button>
-          <button
-            type="button"
-            onClick={() => setPeriodo('mes')}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'mes' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
-          >
-            Este Mes
-          </button>
+        <div className="flex overflow-x-auto no-scrollbar rounded-full bg-white border border-slate-200 p-1 shadow-sm w-full sm:w-auto">
+          <div className="flex min-w-max">
+            <button
+              type="button"
+              onClick={() => setPeriodo('semana')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'semana' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              Esta Semana
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriodo('mes')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'mes' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              Este Mes
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriodo('30dias')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === '30dias' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              30 Días
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriodo('90dias')}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === '90dias' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              90 Días
+            </button>
+          </div>
         </div>
       </div>
 
@@ -181,11 +197,11 @@ export default function FinancialDashboard() {
           </div>
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-3 -mx-6 px-6 sm:mx-0 sm:px-0">
           <div className="overflow-hidden rounded-3xl bg-slate-100 h-4">
             <div className={`h-4 ${progressColor}`} style={{ width: `${progressValue}%` }} />
           </div>
-          <div className="flex items-center justify-between text-sm text-slate-500">
+          <div className="flex items-center justify-between text-sm text-slate-500 font-medium">
             <span>{progressValue}% de la meta</span>
             <span>{stats.metaSemanal ? formatCurrency(stats.capitalReinversion) : formatCurrency(0)}</span>
           </div>
@@ -193,23 +209,43 @@ export default function FinancialDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
+        {/* Ventas Totales */}
         <div
           onClick={handleOpenSalesDetails}
           role="button"
           tabIndex={0}
-          className={`rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition ${loading ? 'animate-pulse' : 'hover:bg-slate-50 cursor-pointer'}`}
+          className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition ${loading ? 'animate-pulse' : 'hover:bg-slate-50 cursor-pointer'}`}
         >
-          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ventas Totales</p>
+          <div className="flex justify-between items-start">
+            <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ventas Totales</p>
+            <div className="p-2 bg-blue-50 rounded-2xl text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
+          </div>
           <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(stats.ingresosTotales)}</p>
           <p className="mt-2 text-sm text-slate-500">Ingresos de pedidos cerrados</p>
         </div>
-        <div className={`rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
-          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Capital a Reinvertir</p>
+
+        {/* Capital a Reinvertir */}
+        <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+           <div className="flex justify-between items-start">
+            <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Capital a Reinvertir</p>
+            <div className="p-2 bg-amber-50 rounded-2xl text-amber-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+          </div>
           <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(stats.capitalReinversion)}</p>
           <p className="mt-2 text-sm text-slate-500">Costo de producción recuperado</p>
         </div>
-        <div className={`rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
-          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ganancia Neta Libre</p>
+        
+        {/* Ganancia Neta */}
+        <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+          <div className="flex justify-between items-start">
+            <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ganancia Neta Libre</p>
+            <div className="p-2 bg-emerald-50 rounded-2xl text-emerald-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+          </div>
           <p className={`mt-4 text-3xl font-semibold ${gainColor}`}>{formatCurrency(stats.gananciaNeta)}</p>
           <p className="mt-2 text-sm text-slate-500">Ingresos menos reinversión</p>
         </div>

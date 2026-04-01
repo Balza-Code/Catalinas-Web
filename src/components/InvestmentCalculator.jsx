@@ -111,7 +111,7 @@ export default function InvestmentCalculator() {
           type="button"
           onClick={handleUpdateAllProducts}
           disabled={isSaving}
-          className="rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full sm:w-auto rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? "Actualizando productos..." : "Actualizar costo en DB"}
         </button>
@@ -149,6 +149,7 @@ export default function InvestmentCalculator() {
                 <span className="block text-sm font-medium text-slate-700">{ingredient.label}</span>
                 <input
                   type="number"
+                  inputMode="decimal"
                   min="0"
                   step="0.01"
                   value={prices[ingredient.key]}

@@ -191,6 +191,14 @@ export const getFinancialStats = async (req, res) => {
     if (periodoParam === 'mes') {
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
       startDate.setHours(0, 0, 0, 0);
+    } else if (periodoParam === '30dias') {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 30);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (periodoParam === '90dias') {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 90);
+      startDate.setHours(0, 0, 0, 0);
     } else {
       startDate = getMonday(today);
     }

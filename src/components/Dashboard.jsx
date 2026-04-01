@@ -214,7 +214,7 @@ const Dashboard = ({ orders }) => {
           <h3 className="text-xl md:text-base font-dm-sans font-medium text-left text-gray-600 mb-4 lg:text-left">
             Rendimiento Mensual: Ventas vs Pagos
           </h3>
-          <div className="w-full h-72 md:h-[90%] pr-8">
+          <div className="w-full h-72 md:h-[90%] pr-0 md:pr-8">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
