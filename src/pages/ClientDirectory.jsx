@@ -303,7 +303,7 @@ const ClientDirectory = () => {
         </button>
       </div>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md pb-4 pt-2 mb-6 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-md">
           <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">🔍</span>
           <input
@@ -362,9 +362,16 @@ const ClientDirectory = () => {
           {filteredClientes.map((cliente) => (
             <div
               key={cliente.userId}
-              className="bg-white rounded-2xl shadow-sm p-6"
+              className={`bg-white rounded-2xl shadow-sm p-6 border-2 transition ${cliente.saldoDeudor > 0 ? "border-red-200" : "border-transparent"}`}
             >
-              <h3 className="text-lg font-semibold mb-4">{cliente.nombre}</h3>
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-bold text-slate-800">{cliente.nombre}</h3>
+                {cliente.saldoDeudor > 0 && (
+                  <span className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-bold">
+                    ⚠️ Deuda Activa
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-gray-600 mb-2">
                 Email: {cliente.email || "Sin email"}
               </p>
@@ -404,9 +411,9 @@ const ClientDirectory = () => {
               </div>
               <button
                 onClick={() => openClientProfile(cliente)}
-                className="mt-6 w-full rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
+                className="mt-6 w-full rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600 flex items-center justify-center gap-2"
               >
-                Ver Perfil
+                Ver Historial / Perfil
               </button>
             </div>
           ))}
