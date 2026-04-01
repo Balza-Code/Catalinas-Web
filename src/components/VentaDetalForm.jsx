@@ -68,8 +68,9 @@ const VentaDetalForm = ({ catalinas, onOrderPlaced }) => {
       estado: "Pendiente", //<-- La marcamos como entregada inmediatamente
     };
 
+    const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
     try {
-      const response = await fetch("http://localhost:4000/api/orders", {
+      const response = await fetch(`${BASE_URL}/orders` , {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify(orderData),
