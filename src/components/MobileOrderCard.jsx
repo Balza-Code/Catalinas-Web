@@ -201,62 +201,48 @@ export const MobileOrderCard = ({
             {isAdmin &&
               order.estado !== "Pago Completado" &&
               order.estado !== "Cancelado" && (
-                <div className="space-y-3 pt-2">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    Cambiar Estado
-                  </p>
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Cambiar Estado
+                    </p>
+                    <select
+                      value={order.estado}
+                      onChange={(e) => handleUpdateStatus(e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                    >
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="En preparación">En preparación</option>
+                      <option value="Por Verificar">Por Verificar</option>
+                      <option value="Entregado">Entregado</option>
+                      <option value="Pago Completado">Pago Completado</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
+                  </div>
 
-                  {order.estado !== "Entregado" && (
-                    <div className="grid grid-cols-1 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStatus("En preparación")}
-                        // CAMBIO: Padding reducido y esquinas más suaves
-                        className="w-full py-3 md:py-4 bg-yellow-100 text-yellow-800 font-medium rounded-xl hover:bg-yellow-200 transition"
-                      >
-                        Marcar: En preparación
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStatus("Entregado")}
-                        className="w-full py-3 md:py-4 bg-blue-100 text-blue-800 font-medium rounded-xl hover:bg-blue-200 transition"
-                      >
-                        Marcar: Entregado
-                      </button>
-                    </div>
-                  )}
-
-                  {order.estado === "Entregado" && comprobanteUrl && (
+                  <div className="grid grid-cols-1 gap-3">
                     <button
                       type="button"
-                      onClick={() => handleUpdateStatus("Pago Completado")}
-                      className="w-full py-3 md:py-4 bg-green-100 text-green-800 font-medium rounded-xl hover:bg-green-200 transition"
+                      onClick={handleCancelOrder}
+                      className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
                     >
-                      Marcar: Pago Completado
+                      Cancelar Pedido
                     </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => handleUpdateStatus("Cancelado")}
-                    className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
-                  >
-                    Cancelar Pedido
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (typeof onDeleteOrder === 'function') {
-                        if (window.confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
-                          onDeleteOrder(order._id);
-                          setIsModalOpen(false);
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof onDeleteOrder === 'function') {
+                          if (window.confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
+                            onDeleteOrder(order._id);
+                            setIsModalOpen(false);
+                          }
                         }
-                      }
-                    }}
-                    className="w-full py-3 md:py-4 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
-                  >
-                    Eliminar Pedido
-                  </button>
+                      }}
+                      className="w-full py-3 md:py-4 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
+                    >
+                      Eliminar Pedido
+                    </button>
+                  </div>
                 </div>
               )}
 
