@@ -37,9 +37,13 @@ Catalina's Web es una aplicación full stack para gestionar pedidos, roles y ven
 - Soporte de roles `admin` y `cliente` para mostrar dashboards distintos.
 - Rutas protegidas y separación de layouts.
 - CRUD de productos (`catalinas`) y gestión de pedidos desde backend.
-- Estructura de API REST con rutas montadas en `/api/auth`, `/api/catalinas`, `/api/orders`, `/api/admin`.
-- Uso de `express.json()` y `cors()` en el backend.
+- Estructura de API REST con rutas montadas en `/api/auth`, `/api/catalinas`, `/api/orders`, `/api/admin`, `/api/expenses`.
 - Frontend organizado con componentes, páginas y servicios dedicados.
+- Soporte completo y experiencia fluida en dispositivos móviles con menús de navegación adaptados (Mobile Bottom Nav, Sidebars móviles).
+- Dashboard financiero avanzado con reportes de períodos y matemáticas de reinversión vs ganancias netas.
+- Módulo avanzado de Flujo de Caja (Egresos) con conversión nativa a 3 cajones: Efectivo USD, Efectivo Bs, Digital.
+- Sistema de historial de gastos con funcionalidad para revertir extracciones compensando cajas automáticamente, topes visuales interactivos y atajos de 1-Click Nómina en el Form.
+- Despliegue optimizado en producción (Render).
 
 ## Fase 1 (Inteligencia Financiera)
 - [x] Implementada: modelo con `costoProduccion`, controlador de estadísticas, Dashboard Financiero y meta dinámica persistida en `Setting`.
@@ -47,7 +51,7 @@ Catalina's Web es una aplicación full stack para gestionar pedidos, roles y ven
 ## Fase 3 (Control de Cobranza / Mini CRM Base)
 - [x] Backend: Endpoint en adminRoutes con Aggregation Pipeline que cruce Usuarios y Pedidos para calcular el "Saldo Deudor" (Total - Pagado). (También logramos que Mongoose permita crear clientes físicos sin email/password requerido).
 - [x] Frontend: Crear componente ClientDirectory.jsx en pages/ consumiendo un nuevo hook useAdmin.
-- [x] UI: Resaltar visualmente (badges rojos/verdes) a los clientes con deudas activas.
+- [x] UI: Resaltar visualmente (badges rojos/verdes) a los clientes con deudas activas, con cabeceras fijas para mejor legibilidad en móviles.
 - [x] Historial de compras del cliente implementado en el perfil de cliente.
 
 ## Tareas Pendientes (Backlog)
