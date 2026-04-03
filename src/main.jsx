@@ -8,9 +8,9 @@ import './index.css'
 import AdminLayout from './components/layout/AdminLayout.jsx'
 import AdminDashboard from './components/AdminDashboard.jsx'
 import CustomerDashboard from './components/CustomerDashboard.jsx'
-import { VentaAlDetalPage } from './pages/VentaAlDetalPage.jsx'
 import { AgregarProductosPage } from './pages/AgregarProductosPage.jsx'
 import { HistorialDePedidosPage } from './pages/HistorialDePedidosPage.jsx'
+import POS from './pages/POS.jsx';
 import { Loginpage } from './pages/Loginpage.jsx';
 import RequireAuth from './components/RequireAuth.jsx'
 import RedirectToRole from './components/RedirectToRole.jsx'
@@ -31,12 +31,12 @@ const protectedRoutes = {
   ),
   children: [
     { index: true, element: <AdminDashboard/> },
-    { path: 'ventas-detal', element: <VentaAlDetalPage/> },
     { path: 'productos', element: <AgregarProductosPage/> },
     { path: 'historial', element: <HistorialDePedidosPage/> },
     { path: 'clientes', element: <ClientDirectory/> },
     { path: 'finanzas', element: <FinancialDashboard/> },
-    { path: 'calculadora', element: <InvestmentCalculator/> }
+    { path: 'calculadora', element: <InvestmentCalculator/> },
+    { path: 'pos', element: <POS/> }
   ]
 }
 

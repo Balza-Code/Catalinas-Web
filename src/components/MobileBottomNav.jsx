@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import BoardIcon from './icons/BoardIcon';
 import AddIcon from './icons/AddIcon';
-import SalesIcon from './icons/SalesIcon';
 import HistoryIcon from './icons/HistoryIcon';
 import UserIcon from './icons/UserIcon';
+import PosIcon from './icons/PosIcon';
+import SalesIcon from './icons/SalesIcon';
 
 const MenuIcon = ({ className = '', size = 28, style = {} }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
@@ -30,7 +31,7 @@ export function MobileBottomNav() {
 
   const adminItems = [
     { id: 'Dashboard', icon: BoardIcon, path: '/admin' },
-    { id: 'Venta', icon: SalesIcon, path: '/admin/ventas-detal' },
+    { id: 'Venta', icon: PosIcon, path: '/admin/pos' },
     { id: 'Pedidos', icon: HistoryIcon, path: '/admin/historial' },
     { id: 'Más', icon: MenuIcon, isAction: true, action: () => setIsMenuOpen(true) },
   ];
