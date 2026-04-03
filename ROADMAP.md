@@ -13,6 +13,7 @@ Aplicación Full Stack (MERN) para la gestión de ventas, inventario, producció
 - Solución de Despliegue en Render: Se corrigieron problemas de case-sensitivity en los imports de modelos (ej. `order.js`), permitiendo un build de producción estable.
 - Tarjetas Móviles de Admin: El panel de admin cuenta con tarjetas táctiles con selectores de estados y visualización clara de metadatos de pago.
 - CRM Corregido: el saldoDeudor y filtros aplicados correctos; migración de datos al nuevo costoProduccion completada.
+- Calculadora de Inversión 2.0: Módulo avanzado para calcular costos con soporte para sub-recetas (Melado vs Masa real), unidades métricas dinámicas, manejo de porciones/empaques, cálculo simultáneo de Margen vs Marcaje y conexión directa a la Base de Datos mediante `Recipe` model.
 
 📌 1. Contexto y Arquitectura del Proyecto
 
@@ -82,7 +83,7 @@ Mejoras para la Fase 1 (Inteligencia Financiera):
 
 [x] Desglose de Ingresos: Añadir un botón o modal en el FinancialDashboard que despliegue una lista detallada de los pedidos específicos que están sumando a los 'Ingresos Totales' y 'Capital a Reinvertir', para no tener que ir al historial general a adivinar.
 
-[ ] Memoria de la Calculadora: Modificar InvestmentCalculator.jsx para que guarde los precios de los ingredientes (en localStorage o en la base de datos) y actúen como valores por defecto al entrar, evitando tener que reescribirlos desde cero cada vez.
+[x] Memoria de la Calculadora: Se rediseñó totalmente `InvestmentCalculator.jsx` junto al backend creando un sistema de Gestión Dinámico con persistencia de Recetas en MongoDB, guardando todas las variables métricas (tipo de envase, precios de lista por ingredientes separados en fases y rendimientos) actualizando el producto final en 1 clic.
 
 Mejoras para la Fase 3 (CRM y Clientes):
 

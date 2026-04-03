@@ -4,6 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,5 +23,8 @@
     "mongoose": "^8.18.2",
     "multer": "^2.0.2",
     "streamifier": "^0.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

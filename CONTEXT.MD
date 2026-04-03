@@ -43,6 +43,7 @@ Catalina's Web es una aplicación full stack para gestionar pedidos, roles y ven
 - Dashboard financiero avanzado con reportes de períodos y matemáticas de reinversión vs ganancias netas.
 - Módulo avanzado de Flujo de Caja (Egresos) con conversión nativa a 3 cajones: Efectivo USD, Efectivo Bs, Digital.
 - Sistema de historial de gastos con funcionalidad para revertir extracciones compensando cajas automáticamente, topes visuales interactivos y atajos de 1-Click Nómina en el Form.
+- Gestión Avanzada de Recetas (Calculadora 2.0): Sistema dinámico con persistencia MongoDB para crear recetarios, segmentar matemática de producción (Masa vs Melado Madre), configurar unidades vs empaques y calcular simultáneamente el Margen Neto y el Marcaje sobre Costo en tarjeta Bento Grid, todo unificado a la coleccion de Catálogado de Catalinas.
 - Despliegue optimizado en producción (Render).
 
 ## Fase 1 (Inteligencia Financiera)
