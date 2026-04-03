@@ -9,6 +9,7 @@ import catalinaRoutes from './routers/catalinaRoutes.js';
 import router from "./routers/orderRoutes.js";
 import adminRoutes from './routers/adminRoutes.js';
 import expenseRoutes from './routers/expenseRoutes.js';
+import productionRoutes from './routers/productionRoutes.js';
 
 
 // 2. Crear una instancia de la aplicación express
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/production', productionRoutes);
 
 
 

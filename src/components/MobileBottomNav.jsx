@@ -75,6 +75,10 @@ export function MobileBottomNav() {
             <SalesIcon size={24} />
             <span>Calculadora de Recetas</span>
           </NavLink>
+          <NavLink to="/admin/produccion" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
+            <BoardIcon size={24} />
+            <span>Control de Producción</span>
+          </NavLink>
         </div>
       </div>
 

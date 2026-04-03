@@ -19,6 +19,7 @@ import CustomerNewOrderPage from './pages/CustomerNewOrder.jsx'
 import ClientHistoryPage from './pages/ClientHistoryPage.jsx';
 import ClientDirectory from './pages/ClientDirectory.jsx';
 import InvestmentCalculator from './components/InvestmentCalculator.jsx';
+import ProductionPanel from './pages/ProductionPanel.jsx';
 import FinancialDashboard from './components/FinancialDashboard.jsx';
 import { HashRouter } from 'react-router-dom';
 
@@ -36,7 +37,8 @@ const protectedRoutes = {
     { path: 'clientes', element: <ClientDirectory/> },
     { path: 'finanzas', element: <FinancialDashboard/> },
     { path: 'calculadora', element: <InvestmentCalculator/> },
-    { path: 'pos', element: <POS/> }
+    { path: 'pos', element: <POS/> },
+    { path: 'produccion', element: <ProductionPanel/> }
   ]
 }
 

@@ -15,6 +15,7 @@ export const SideBar = ({ logout }) => {
     { id: 'Finanzas', icon: BoardIcon, path: '/admin/finanzas' },
     { id: 'Punto de Venta POS', icon: PosIcon, path: '/admin/pos' },
     { id: 'Calculadora', icon: SalesIcon, path: '/admin/calculadora' },
+    { id: 'Producción', icon: BoardIcon, path: '/admin/produccion' },
   ];
 
   return (

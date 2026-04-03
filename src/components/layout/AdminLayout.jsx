@@ -20,7 +20,7 @@ function AdminLayout() {
       </div>
 
       {/* 3. El Contenido Variable */}
-      <main className="flex-1 w-full flex flex-col mb-14 md:mb-0 ">
+      <main className="flex-1 w-full flex flex-col mb-24 md:mb-0 ">
         {/* Aquí es donde React Router "pintará" la página
             (Dashboard, Ventas, Historial, etc.) */}
 
