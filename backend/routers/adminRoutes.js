@@ -1,5 +1,13 @@
 import express from 'express';
-import { getAdminClientesResume, createAdminCliente, getFinancialStats, updateMetaSemanal } from '../controllers/adminController.js';
+import { 
+  getAdminClientesResume, 
+  createAdminCliente, 
+  getFinancialStats, 
+  updateMetaSemanal,
+  getRecipes,
+  createRecipe,
+  updateRecipe
+} from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { adminOnly } from '../middleware/adminMiddleware.js';
 
@@ -13,5 +21,10 @@ router.get('/stats', protect, adminOnly, getFinancialStats);
 router.put('/settings/meta', protect, adminOnly, updateMetaSemanal);
 // Ruta para crear clientes físicos / de CRM desde el panel admin
 router.post('/clientes', protect, adminOnly, createAdminCliente);
+
+// ================= RECETAS =================
+router.get('/recipes', protect, adminOnly, getRecipes);
+router.post('/recipes', protect, adminOnly, createRecipe);
+router.put('/recipes/:id', protect, adminOnly, updateRecipe);
 
 export default router;

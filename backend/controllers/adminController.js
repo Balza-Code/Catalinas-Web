@@ -2,6 +2,7 @@ import Order from '../models/order.js';
 import User from '../models/user.js';
 import Setting from '../models/Setting.js';
 import Expense from '../models/Expense.js';
+import Recipe from '../models/Recipe.js';
 
 export const getAdminClientesResume = async (req, res) => {
   try {
@@ -310,3 +311,127 @@ export const getFinancialStats = async (req, res) => {
     });
   }
 };
+
+// ================= RECETAS =================
+
+export const getRecipes = async (req, res) => {
+  try {
+    const recipes = await Recipe.find().populate('productoAsociado', 'nombre precio costoProduccion').lean();
+    res.status(200).json({
+      success: true,
+      data: recipes,
+    });
+  } catch (error) {
+    console.error('Error en getRecipes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al obtener las recetas',
+      error: error.message,
+    });
+  }
+};
+
+export const createRecipe = async (req, res) => {
+  try {
+    const { 
+      nombre, 
+      rendimientoEstimado, 
+      unidadesPorPaquete,
+      tipoProductoAsociado,
+      productoAsociado, 
+      ingredientes,
+      usaMelado,
+      rendimientoMelado,
+      meladoUsadoPorTanda
+    } = req.body;
+    
+    if (!nombre || !rendimientoEstimado || !ingredientes) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan campos obligatorios para la receta (nombre, rendimientoEstimado, ingredientes)',
+      });
+    }
+
+    const nuevaReceta = await Recipe.create({
+      nombre,
+      rendimientoEstimado,
+      unidadesPorPaquete: unidadesPorPaquete || 1,
+      tipoProductoAsociado: tipoProductoAsociado || 'Paquete',
+      usaMelado: usaMelado || false,
+      rendimientoMelado: rendimientoMelado || 24,
+      meladoUsadoPorTanda: meladoUsadoPorTanda || 6.8,
+      productoAsociado,
+      ingredientes
+    });
+    
+    // Poblamos para regresar la data completa
+    const recetaGuardada = await Recipe.findById(nuevaReceta._id).populate('productoAsociado', 'nombre precio costoProduccion').lean();
+
+    res.status(201).json({
+      success: true,
+      data: recetaGuardada,
+      message: 'Receta creada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en createRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al crear la receta',
+      error: error.message,
+    });
+  }
+};
+
+export const updateRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+      nombre, 
+      rendimientoEstimado, 
+      unidadesPorPaquete,
+      tipoProductoAsociado,
+      productoAsociado, 
+      ingredientes,
+      usaMelado,
+      rendimientoMelado,
+      meladoUsadoPorTanda 
+    } = req.body;
+
+    const receta = await Recipe.findById(id);
+    if (!receta) {
+      return res.status(404).json({
+        success: false,
+        message: 'Receta no encontrada',
+      });
+    }
+
+    if (nombre) receta.nombre = nombre;
+    if (rendimientoEstimado !== undefined) receta.rendimientoEstimado = rendimientoEstimado;
+    if (unidadesPorPaquete !== undefined) receta.unidadesPorPaquete = unidadesPorPaquete;
+    if (tipoProductoAsociado !== undefined) receta.tipoProductoAsociado = tipoProductoAsociado;
+    if (usaMelado !== undefined) receta.usaMelado = usaMelado;
+    if (rendimientoMelado !== undefined) receta.rendimientoMelado = rendimientoMelado;
+    if (meladoUsadoPorTanda !== undefined) receta.meladoUsadoPorTanda = meladoUsadoPorTanda;
+    if (productoAsociado !== undefined) receta.productoAsociado = productoAsociado; // Puede venir nulo
+    if (ingredientes) receta.ingredientes = ingredientes;
+
+    await receta.save();
+
+    // Poblamos para regresar la data completa
+    const recetaActualizada = await Recipe.findById(id).populate('productoAsociado', 'nombre precio costoProduccion').lean();
+
+    res.status(200).json({
+      success: true,
+      data: recetaActualizada,
+      message: 'Receta actualizada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en updateRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al actualizar la receta',
+      error: error.message,
+    });
+  }
+};
+

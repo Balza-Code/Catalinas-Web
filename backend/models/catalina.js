@@ -34,6 +34,12 @@ const catalinaSchema = new mongoose.Schema({
     enum: ['online', 'detal', 'ambos'],
     default: 'ambos',
     required: true
+  },
+  // Stock global en PAQUETES. Se incrementa al cerrar una tanda de producción.
+  stock: {
+    type: Number,
+    default: 0,
+    min: 0
   }
   }, {
     timestamps: true //Esto anade automáticamente los campos createdAt y updateAt
