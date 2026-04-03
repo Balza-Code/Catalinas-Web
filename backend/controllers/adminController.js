@@ -1,6 +1,7 @@
 import Order from '../models/order.js';
 import User from '../models/user.js';
 import Setting from '../models/Setting.js';
+import Expense from '../models/Expense.js';
 
 export const getAdminClientesResume = async (req, res) => {
   try {
@@ -208,11 +209,64 @@ export const getFinancialStats = async (req, res) => {
       createdAt: { $gte: startDate, $lte: endDate },
     }).lean();
 
- 
+    const gastos = await Expense.find({
+      createdAt: { $gte: startDate, $lte: endDate },
+    }).lean();
+
+    const totalGastos = gastos.reduce((sum, gasto) => sum + (gasto.montoCalculadoUSD || gasto.monto || 0), 0);
+
+    let gastosReinversion = 0;
+    let gastosOperativos = 0;
+
+    gastos.forEach(gasto => {
+      const valorUSD = gasto.montoCalculadoUSD || gasto.monto || 0;
+      if (gasto.categoria === 'Materia Prima' || gasto.categoria === 'Empaque') {
+        gastosReinversion += valorUSD;
+      } else if (gasto.categoria === 'Personal' || gasto.categoria === 'Servicios' || gasto.categoria === 'Varios') {
+        gastosOperativos += valorUSD;
+      }
+    });
 
     const ingresosTotales = pedidos.reduce((sum, pedido) => sum + (pedido.total || 0), 0);
 
-    const capitalReinversion = pedidos.reduce((sum, pedido) => {
+    let ingresosEfectivoUSD = 0;
+    let ingresosEfectivoBs = 0;
+    let ingresosDigital = 0;
+
+    pedidos.forEach(pedido => {
+      const monto = pedido.total || 0;
+      if (pedido.metodoPago === 'Efectivo') {
+        if (pedido.monedaPago === 'USD') ingresosEfectivoUSD += monto;
+        else if (pedido.monedaPago === 'Bs') ingresosEfectivoBs += monto;
+        else ingresosEfectivoBs += monto; // default si Efectivo pero sin moneda
+      } else {
+        ingresosDigital += monto;
+      }
+    });
+
+    let gastosEfectivoUSD = 0;
+    let gastosEfectivoBs = 0;
+    let gastosDigitalCalculos = 0;
+
+    gastos.forEach(gasto => {
+      const valor = gasto.montoCalculadoUSD || gasto.monto || 0;
+      if (gasto.metodoPago === 'Digital') {
+        gastosDigitalCalculos += valor;
+      } else if (gasto.metodoPago === 'Efectivo USD' || gasto.metodoPago === 'Efectivo') {
+        gastosEfectivoUSD += valor;
+      } else if (gasto.metodoPago === 'Efectivo Bs') {
+        gastosEfectivoBs += valor;
+      }
+    });
+
+    const caja = {
+      efectivoUSD: ingresosEfectivoUSD - gastosEfectivoUSD,
+      efectivoBs: ingresosEfectivoBs - gastosEfectivoBs,
+      digital: ingresosDigital - gastosDigitalCalculos,
+      totalGastos: totalGastos
+    };
+
+    const costosProduccion = pedidos.reduce((sum, pedido) => {
       const pedidoCapital = typeof pedido.costoTotalProduccion === 'number'
         ? pedido.costoTotalProduccion
         : Array.isArray(pedido.items)
@@ -225,7 +279,8 @@ export const getFinancialStats = async (req, res) => {
       return sum + pedidoCapital;
     }, 0);
 
-    const gananciaNeta = ingresosTotales - capitalReinversion;
+    const capitalReinversion = costosProduccion - gastosReinversion;
+    const gananciaNeta = (ingresosTotales - costosProduccion) - gastosOperativos;
     const setting = await Setting.findOne();
     const metaSemanal = setting?.metaSemanal ?? 50;
 
@@ -242,6 +297,7 @@ export const getFinancialStats = async (req, res) => {
       ingresosTotales,
       capitalReinversion,
       gananciaNeta,
+      caja,
       metaSemanal,
       pedidos: pedidosDetalle,
     });

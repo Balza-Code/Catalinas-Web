@@ -208,7 +208,36 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="mt-8">
+        <h3 className="text-xl font-bold text-slate-800 mb-4">Disponibilidad en Caja (Conciliación)</h3>
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Físico USD */}
+          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+            <div className="flex justify-between items-start">
+              <p className="text-sm uppercase tracking-[0.25em] text-slate-400">💵 Físico USD</p>
+            </div>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(stats.caja?.efectivoUSD)}</p>
+          </div>
+
+          {/* Físico Bs */}
+          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+            <div className="flex justify-between items-start">
+              <p className="text-sm uppercase tracking-[0.25em] text-slate-400">💸 Físico Bs</p>
+            </div>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(stats.caja?.efectivoBs)}</p>
+          </div>
+
+          {/* Digital / Banco */}
+          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+            <div className="flex justify-between items-start">
+              <p className="text-sm uppercase tracking-[0.25em] text-slate-400">📱 Digital / Banco</p>
+            </div>
+            <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(stats.caja?.digital)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3 mt-6">
         {/* Ventas Totales */}
         <div
           onClick={handleOpenSalesDetails}
@@ -247,7 +276,7 @@ export default function FinancialDashboard() {
             </div>
           </div>
           <p className={`mt-4 text-3xl font-semibold ${gainColor}`}>{formatCurrency(stats.gananciaNeta)}</p>
-          <p className="mt-2 text-sm text-slate-500">Ingresos menos reinversión</p>
+          <p className="mt-2 text-sm text-slate-500">(Ingresos - Reinversión) - Gastos</p>
         </div>
       </div>
 

@@ -5,6 +5,12 @@ const initialStats = {
   ingresosTotales: 0,
   capitalReinversion: 0,
   gananciaNeta: 0,
+  caja: {
+    efectivoUSD: 0,
+    efectivoBs: 0,
+    digital: 0,
+    totalGastos: 0
+  },
   metaSemanal: 0,
   pedidos: [],
 };
@@ -36,6 +42,7 @@ export const useFinancialStats = (token, periodo) => {
           ingresosTotales: data.ingresosTotales ?? 0,
           capitalReinversion: data.capitalReinversion ?? 0,
           gananciaNeta: data.gananciaNeta ?? 0,
+          caja: data.caja || initialStats.caja,
           metaSemanal: data.metaSemanal ?? 0,
           pedidos: Array.isArray(data.pedidos) ? data.pedidos : [],
         });
