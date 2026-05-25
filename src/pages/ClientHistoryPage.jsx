@@ -1,6 +1,5 @@
 // src/pages/CustomerDashboard.jsx
 import { OrderList } from '../components/OrderList';
-import OrderSection from '../components/OrderSection';
 import { useCatalinas } from '../hooks/useCatalinas';
 import useOrders from '../hooks/useOrders';
 import { createOrder, updateOrder } from '../services/orderService';
