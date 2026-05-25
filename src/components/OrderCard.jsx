@@ -118,7 +118,7 @@ export const OrderCard = ({
             >
               <div className="space-y-4">
                 {/* --- SUBIDA DE COMPROBANTE --- */}
-                {order.estado === "Entregado" && !comprobanteUrl && (
+                {order.estado !== "Pago Completado" && order.estado !== "Cancelado" && !comprobanteUrl && (
                   <UploadReceiptForm
                     orderId={order._id}
                     onReceiptUploaded={handleReceiptUploaded}

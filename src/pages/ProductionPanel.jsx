@@ -21,6 +21,14 @@ const formatDate = (iso) =>
     minute: '2-digit',
   });
 
+const formatCurrency = (value) =>
+  Number(value || 0).toLocaleString('es-VE', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 // ─── Toast interno (lógica de estado + clases Tailwind puras) ─────────────────
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
@@ -30,9 +38,9 @@ function Toast({ msg, type, onClose }) {
 
   return (
     <div
-      className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2
-        px-5 py-3 rounded-xl shadow-xl font-semibold text-sm text-white
-        ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}
+      className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2
+        px-5 py-3 rounded-button shadow-xl font-semibold text-sm text-white
+        ${type === 'error' ? 'bg-status-danger' : 'bg-status-success'}`}
     >
       <span>{type === 'error' ? '✕' : '✓'}</span>
       {msg}
@@ -46,11 +54,11 @@ function BatchCard({ batch, onFinalize, onCancel }) {
   const producto = receta?.productoAsociado;
 
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 rounded-2xl p-5 flex flex-col gap-3 shadow-md">
+    <div className="bg-brand-50/50 border border-brand-100 rounded-card p-5 flex flex-col gap-3 shadow-sm">
       {/* Encabezado */}
       <div className="flex justify-between items-start gap-2">
         <div>
-          <p className="font-bold text-amber-900 text-base">🍞 {receta?.nombre || 'Receta'}</p>
+          <p className="font-bold text-brand-900 text-base">🍞 {receta?.nombre || 'Receta'}</p>
           {producto && (
             <p className="text-xs text-stone-500 mt-0.5">
               Producto: {producto.nombre} · Stock actual:{' '}
@@ -58,7 +66,7 @@ function BatchCard({ batch, onFinalize, onCancel }) {
             </p>
           )}
         </div>
-        <span className="bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+        <span className="bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-button whitespace-nowrap">
           EN PROCESO
         </span>
       </div>
@@ -86,13 +94,13 @@ function BatchCard({ batch, onFinalize, onCancel }) {
       <div className="flex gap-2 mt-1">
         <button
           onClick={() => onFinalize(batch)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-amber-500 to-amber-700 text-white font-bold rounded-xl text-sm hover:brightness-110 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-500 text-white font-bold rounded-button text-sm hover:bg-brand-600 transition-colors"
         >
           🔥 Finalizar Horneado
         </button>
         <button
           onClick={() => onCancel(batch._id)}
-          className="px-4 py-2.5 bg-white text-slate-500 border border-slate-200 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-colors"
+          className="px-4 py-2.5 bg-surface-card text-slate-500 border border-surface-border font-semibold rounded-button text-sm hover:bg-surface-bg transition-colors"
         >
           Cancelar
         </button>
@@ -105,27 +113,43 @@ function BatchCard({ batch, onFinalize, onCancel }) {
 function HistoryCard({ batch }) {
   const receta = batch.recetaId;
   const isCompleted = batch.estado === 'Completada';
+  const produced = Number(batch.cantidadRealObtenida) || 0;
+  const expected = Number(batch.cantidadEsperada) || 0;
+  const diff = produced - expected;
+  const trendLabel = diff > 0
+    ? `📈 Excedente: +${diff} paq.`
+    : diff < 0
+      ? `📉 Merma: ${diff} paq.`
+      : '✅ Meta cumplida';
+  const trendClass = diff > 0 ? 'text-status-success' : diff < 0 ? 'text-status-danger' : 'text-slate-700';
+  const product = receta?.productoAsociado || receta;
+  const precio = Number(product?.precio) || 0;
+  const costo = Number(product?.costoProduccion) || 0;
+  const marginReal = (precio - costo) * produced;
 
   return (
     <div
-      className={`bg-white border rounded-xl p-4 flex justify-between items-center
-        ${isCompleted ? 'border-green-200' : 'border-red-200'}`}
+      className={`bg-surface-card border rounded-card p-4 flex flex-col gap-3 shadow-sm
+        ${isCompleted ? 'border-status-success/30' : 'border-status-danger/30'}`}
     >
-      <div>
-        <p className="font-semibold text-slate-700 text-sm">{receta?.nombre || 'Receta eliminada'}</p>
-        <p className="text-xs text-slate-400 mt-0.5">{formatDate(batch.updatedAt)}</p>
-      </div>
-      <div className="text-right">
+      <div className="flex justify-between items-start gap-4">
+        <div>
+          <p className="font-semibold text-slate-700 text-sm">{receta?.nombre || 'Receta eliminada'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{formatDate(batch.updatedAt)}</p>
+        </div>
         <span
-          className={`text-xs font-bold px-3 py-1 rounded-full
-            ${isCompleted ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}
+          className={`text-xs font-bold px-3 py-1 rounded-button ${isCompleted ? 'bg-status-success/20 text-status-success' : 'bg-status-danger/20 text-status-danger'}`}
         >
           {batch.estado.toUpperCase()}
         </span>
-        {isCompleted && (
-          <p className="text-xs text-slate-500 mt-1">{batch.cantidadRealObtenida} paq. producidos</p>
-        )}
       </div>
+      {isCompleted && (
+        <div className="text-sm text-slate-700">
+          <p className="font-semibold">{produced} paq. producidos <span className="font-normal text-slate-500">(Meta: {expected})</span></p>
+          <p className={`text-xs font-semibold ${trendClass}`}>{trendLabel}</p>
+          <p className="text-xs text-slate-500">Margen Real: {formatCurrency(marginReal)}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -257,11 +281,50 @@ export default function ProductionPanel() {
   // ── Derivados ──────────────────────────────────────────────────────────────
   const activeBatches = batches.filter((b) => b.estado === 'En Proceso');
   const historyBatches = batches.filter((b) => b.estado !== 'En Proceso');
-  const selectedReceta = recipes.find((r) => r._id === selectedRecipeId);
+  const normalisedRecipeId = String(selectedRecipeId || '');
+  const selectedReceta = recipes.find(
+    (r) => String(r._id) === normalisedRecipeId || String(r.id) === normalisedRecipeId,
+  );
+  const productData = selectedReceta?.productoAsociado || selectedReceta;
+  const expectedQtyNumber = Number(expectedQty) || 0;
+  const precioVenta = Number(productData?.precio ?? productData?.precioVenta ?? 0) || 0;
+  const costoProduccion = Number(productData?.costoProduccion ?? productData?.costProduction ?? 0) || 0;
+  const inversionEstimada = costoProduccion * expectedQtyNumber;
+  const potencialVenta = precioVenta * expectedQtyNumber;
+  const margenEstimado = potencialVenta - inversionEstimada;
+  const showProjection = Boolean(selectedReceta && expectedQtyNumber > 0);
+
+  const activeBatchMetrics = activeBatches.map((batch) => {
+    const recipe = batch?.recetaId;
+    const product = recipe?.productoAsociado || recipe;
+    const precio = Number(product?.precio ?? 0) || 0;
+    const costo = Number(product?.costoProduccion ?? 0) || 0;
+    const cantidad = Number(batch?.cantidadEsperada) || 0;
+    const potential = precio * cantidad;
+    const margin = (precio - costo) * cantidad;
+    return { potential, margin, cantidad };
+  });
+  const valorEnHorno = activeBatchMetrics.reduce((sum, item) => sum + item.potential, 0);
+  const proyeccionMargenTotal = activeBatchMetrics.reduce((sum, item) => sum + item.margin, 0);
+  const paqEnProceso = activeBatchMetrics.reduce((sum, item) => sum + item.cantidad, 0);
+
+  const closingExpectedQty = Number(closingBatch?.cantidadEsperada) || 0;
+  const closingRealQty = Number(realQty) || 0;
+  const closingDiff = closingRealQty - closingExpectedQty;
+  const closingPerformanceLabel = closingDiff > 0
+    ? `📈 Excedente: +${Math.abs(closingDiff)} paq.`
+    : closingDiff < 0
+      ? `📉 Merma: -${Math.abs(closingDiff)} paq.`
+      : '✅ Meta cumplida';
+  const closingPerformanceClass = closingDiff > 0 ? 'text-emerald-600' : closingDiff < 0 ? 'text-rose-600' : 'text-slate-700';
+  const closingProduct = closingBatch?.recetaId?.productoAsociado || closingBatch?.recetaId;
+  const closingPrice = Number(closingProduct?.precio ?? 0) || 0;
+  const closingCost = Number(closingProduct?.costoProduccion ?? 0) || 0;
+  const closingMarginReal = (closingPrice - closingCost) * closingRealQty;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-dvh bg-[#f5f0e6] px-4 py-6 pb-24 font-[Inter] max-w-4xl mx-auto">
+    <div className="min-h-dvh bg-surface-bg px-4 py-6 pb-24 font-[Inter] max-w-4xl mx-auto">
 
       {/* Toast */}
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
@@ -276,24 +339,42 @@ export default function ProductionPanel() {
         </div>
         <button
           onClick={() => setShowStartModal(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-bold rounded-2xl shadow-lg hover:brightness-110 hover:-translate-y-0.5 transition-all text-sm"
+          className="flex items-center gap-2 px-5 py-3 bg-brand-500 text-white font-bold rounded-button shadow hover:bg-brand-600 hover:-translate-y-0.5 transition-all text-sm"
         >
           <AddIcon size={20} />
           Iniciar Nueva Tanda
         </button>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-3 mb-8">
+        <div className="rounded-card bg-surface-card p-6 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Valor en Horno</p>
+          <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(valorEnHorno)}</p>
+          <p className="mt-2 text-sm text-slate-500">Potencial de venta total de las tandas en proceso</p>
+        </div>
+        <div className="rounded-card bg-surface-card p-6 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Proyección del Día</p>
+          <p className="mt-4 text-3xl font-semibold text-status-success">{formatCurrency(proyeccionMargenTotal)}</p>
+          <p className="mt-2 text-sm text-slate-500">Margen estimado total de las tandas activas</p>
+        </div>
+        <div className="rounded-card bg-surface-card p-6 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Paquetes en Proceso</p>
+          <p className="mt-4 text-3xl font-semibold text-slate-900">{paqEnProceso}</p>
+          <p className="mt-2 text-sm text-slate-500">Cantidad total planificada para hornear</p>
+        </div>
+      </div>
+
       {/* Tandas Activas */}
       <section>
-        <h2 className="flex items-center gap-2 text-sm font-bold text-amber-800 mb-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 ring-4 ring-amber-100 inline-block" />
+        <h2 className="flex items-center gap-2 text-sm font-bold text-brand-900 mb-3">
+          <span className="w-2.5 h-2.5 rounded-full bg-brand-500 ring-4 ring-brand-100 inline-block" />
           Tandas En Proceso ({activeBatches.length})
         </h2>
 
         {loading ? (
           <p className="text-center text-slate-400 py-10">Cargando tandas…</p>
         ) : activeBatches.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-stone-300 rounded-2xl text-stone-400">
+          <div className="flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-surface-border rounded-card text-stone-400 bg-surface-card shadow-sm">
             <BoardIcon size={36} className="opacity-40" />
             <p className="font-semibold">No hay tandas en proceso</p>
             <p className="text-xs">Inicia una nueva tanda para comenzar a registrar producción.</p>
@@ -344,7 +425,7 @@ export default function ProductionPanel() {
               <select
                 value={selectedRecipeId}
                 onChange={(e) => setSelectedRecipeId(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2.5 border border-surface-border rounded-button bg-surface-bg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="">— Selecciona una receta —</option>
                 {recipes.map((r) => (
@@ -357,7 +438,7 @@ export default function ProductionPanel() {
 
             {/* Preview de stock actual si hay producto asociado */}
             {selectedReceta?.productoAsociado && (
-              <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-2.5 text-xs text-green-700">
+              <div className="bg-status-success/10 border border-status-success/20 rounded-button px-4 py-2.5 text-xs text-status-success font-semibold">
                 📦 Producto: <span className="font-bold">{selectedReceta.productoAsociado.nombre}</span>
                 {' — '}Stock actual:{' '}
                 <span className="font-bold">{selectedReceta.productoAsociado.stock ?? 0}</span> paq.
@@ -373,8 +454,29 @@ export default function ProductionPanel() {
                 value={expectedQty}
                 onChange={(e) => setExpectedQty(e.target.value)}
                 placeholder="Ej: 28"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2.5 border border-surface-border rounded-button bg-surface-bg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
+            </div>
+
+            <div className="bg-surface-bg border border-surface-border p-4 rounded-card mt-4">
+              <p className="text-sm font-semibold text-slate-700 mb-3">Proyección de Producción</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-button bg-surface-card p-3 border border-surface-border">
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Costo Total</p>
+                  <p className="mt-3 text-xl font-semibold text-slate-900">{formatCurrency(showProjection ? inversionEstimada : 0)}</p>
+                  <p className="mt-2 text-xs text-slate-500">{showProjection ? 'Costo de producción estimado' : 'Ingresa la cantidad para proyectar'}</p>
+                </div>
+                <div className="rounded-button bg-surface-card p-3 border border-surface-border">
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Potencial de Venta</p>
+                  <p className="mt-3 text-xl font-semibold text-slate-900">{formatCurrency(showProjection ? potencialVenta : 0)}</p>
+                  <p className="mt-2 text-xs text-slate-500">Ingresos brutos estimados</p>
+                </div>
+                <div className="rounded-button bg-surface-card p-3 border border-surface-border">
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Ganancia Esperada</p>
+                  <p className="mt-3 text-xl font-semibold text-status-success">{formatCurrency(showProjection ? margenEstimado : 0)}</p>
+                  <p className="mt-2 text-xs text-slate-500">Margen estimado antes de hornear</p>
+                </div>
+              </div>
             </div>
 
             {/* Notas opcionales */}
@@ -385,7 +487,7 @@ export default function ProductionPanel() {
                 onChange={(e) => setBatchNotes(e.target.value)}
                 rows={2}
                 placeholder="Ej: Masa especial, horno a 180°C…"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                className="w-full px-3 py-2.5 border border-surface-border rounded-button bg-surface-bg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               />
             </div>
 
@@ -393,14 +495,14 @@ export default function ProductionPanel() {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setShowStartModal(false)}
-                className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 transition-colors text-sm"
+                className="flex-1 py-2.5 bg-surface-bg text-slate-600 font-semibold rounded-button hover:bg-surface-border transition-colors text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleStartBatch}
                 disabled={startLoading}
-                className="flex-[2] py-2.5 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-bold rounded-xl hover:brightness-110 transition-all text-sm disabled:opacity-60"
+                className="flex-[2] py-2.5 bg-brand-500 text-white font-bold rounded-button hover:bg-brand-600 transition-all text-sm disabled:opacity-60"
               >
                 {startLoading ? 'Iniciando…' : '🔥 Iniciar Tanda'}
               </button>
@@ -414,7 +516,7 @@ export default function ProductionPanel() {
         <Modal title="✅ Finalizar Horneado" onClose={() => setClosingBatch(null)}>
           <div className="flex flex-col gap-4">
             {/* Info de la tanda */}
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+            <div className="bg-brand-50 border border-brand-100 rounded-card px-4 py-3 text-sm text-brand-900">
               <p className="font-bold">🍞 {closingBatch.recetaId?.nombre}</p>
               <p className="mt-1">
                 Paquetes esperados: <span className="font-bold">{closingBatch.cantidadEsperada}</span>
@@ -432,25 +534,31 @@ export default function ProductionPanel() {
                 value={realQty}
                 onChange={(e) => setRealQty(e.target.value)}
                 autoFocus
-                className="w-full px-4 py-4 border-2 border-amber-400 rounded-2xl text-3xl font-bold text-center text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-4 py-4 border-2 border-brand-500 rounded-card text-3xl font-bold text-center text-slate-800 bg-surface-card focus:outline-none focus:ring-2 focus:ring-brand-100"
               />
               <p className="text-xs text-slate-400 text-center">
                 Este valor se sumará al stock de inventario del producto asociado.
               </p>
             </div>
 
+            <div className="rounded-card bg-surface-bg border border-surface-border p-4">
+              <p className="text-sm font-semibold text-slate-700">Rendimiento vs Meta</p>
+              <p className={`mt-2 text-base font-semibold ${closingPerformanceClass}`}>{closingPerformanceLabel}</p>
+              <p className="mt-1 text-xs text-slate-500">Margen real estimado: {formatCurrency(closingMarginReal)}</p>
+            </div>
+
             {/* Acciones */}
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setClosingBatch(null)}
-                className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 transition-colors text-sm"
+                className="flex-1 py-2.5 bg-surface-bg text-slate-600 font-semibold rounded-button hover:bg-surface-border transition-colors text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCloseBatch}
                 disabled={closeLoading}
-                className="flex-[2] py-3 bg-gradient-to-r from-green-500 to-green-700 text-white font-bold rounded-xl hover:brightness-110 transition-all text-sm disabled:opacity-60"
+                className="flex-[2] py-3 bg-brand-500 text-white font-bold rounded-button hover:bg-brand-600 transition-all text-sm disabled:opacity-60"
               >
                 {closeLoading ? 'Guardando…' : '✅ Confirmar y Actualizar Inventario'}
               </button>

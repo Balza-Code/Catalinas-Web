@@ -65,69 +65,53 @@ export const MobileOrderCard = ({
     }
   };
 
+  const isActionable = ["Pendiente", "Por Verificar", "En preparación"].includes(order.estado);
+  const isCompleted = order.estado === "Pago Completado" || order.estado === "Entregado";
+  const isCancelled = order.estado === "Cancelado";
+
   return (
     <>
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-4">
-        {/* --- CABECERA: Cliente y Estado --- */}
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-1">Cliente</p>
-            <p className="font-bold text-gray-800 text-lg">
-              {order.clienteNombre}
-            </p>
-          </div>
-          {isAdmin ? (
-            <select
-              value={order.estado}
-              onChange={(e) => handleUpdateStatus(e.target.value)}
-              className={`px-3 py-1 rounded-full text-xs font-bold outline-none cursor-pointer appearance-none text-center ${getStatusColor(order.estado)}`}
-            >
-              <option value="Pendiente">Pendiente</option>
-              <option value="En preparación">En preparación</option>
-              <option value="Por Verificar">Por Verificar</option>
-              <option value="Entregado">Entregado</option>
-              <option value="Pago Completado">Completed</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
-          ) : (
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                order.estado
-              )}`}
-            >
-              {order.estado === "Pago Completado" ? "Completed" : order.estado}
+      <div className="bg-surface-card p-6 rounded-card shadow-sm border border-surface-border hover:shadow-md transition-shadow">
+        <div className="flex flex-col gap-3 mb-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Pedido</p>
+              <p className="mt-1 text-2xl font-black text-slate-800 tracking-tight">{order.items.length} producto{order.items.length === 1 ? '' : 's'}</p>
+            </div>
+            <span className={`rounded-button border px-3 py-1 text-xs font-bold ${getStatusColor(order.estado)}`}>
+              {order.estado === "Pago Completado" ? "Pagado" : order.estado}
             </span>
-          )}
+          </div>
         </div>
 
         {/* --- PRODUCTOS --- */}
-        <div className="mb-4">
-          <p className="text-xs text-gray-400 font-medium mb-1">Productos</p>
+        <div className="mb-5 bg-surface-bg p-4 rounded-button border border-surface-border">
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Detalle de Productos</p>
           {order.items.map((item, i) => (
-            <p key={i} className="text-gray-600 text-sm font-medium">
-              {item.cantidad}x {item.nombre}
-            </p>
+            <div key={i} className="flex justify-between items-center text-slate-700 text-sm font-semibold mb-1 border-b border-surface-border/50 last:border-0 pb-1 last:pb-0">
+              <span>{item.cantidad}x {item.nombre}</span>
+            </div>
           ))}
         </div>
 
         {/* --- METADATA DE PAGO --- */}
         {order.metodoPago && order.metodoPago !== 'N/A' && order.metodoPago !== 'Pedido Online' && (
-          <div className="mb-4 flex items-center gap-2">
-            <span className={`px-2 py-1 text-xs font-bold rounded ${order.metodoPago === 'Efectivo' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}`}>
+          <div className="mb-5 flex items-center gap-2">
+            <span className="px-2 py-1 text-[10px] font-bold rounded-button bg-surface-bg border border-surface-border text-slate-600 uppercase tracking-wider">
                {order.metodoPago === 'Efectivo' ? `💵 Efectivo (${order.monedaPago})` : `🏦 ${order.metodoPago}`}
             </span>
           </div>
         )}
 
         {/* --- TOTAL Y FECHA (Grid de 2 columnas) --- */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-1">Total</p>
-            <p className="font-bold text-gray-900">{order.total} USD</p>
+        <div className="grid grid-cols-2 gap-4 mb-5">
+          <div className="bg-surface-bg p-3 rounded-button border border-surface-border text-center">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total</p>
+            <p className="text-xl font-black text-slate-800">${Number(order.total || 0).toFixed(2)}</p>
           </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-1">Fecha</p>
-            <p className="font-bold text-gray-600">
+          <div className="bg-surface-bg p-3 rounded-button border border-surface-border text-center">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Fecha</p>
+            <p className="text-sm font-bold text-slate-700 mt-1">
               {new Date(order.createdAt).toLocaleDateString("es-VE", {
                 year: "2-digit",
                 month: "2-digit",
@@ -137,27 +121,34 @@ export const MobileOrderCard = ({
           </div>
         </div>
 
-        {/* --- FOOTER: Divisor y Acciones --- */}
-        <div className="border-t border-gray-100 pt-3 flex justify-between items-center gap-4">
-          <div>
-            {!isAdmin && order.estado === "Pendiente" && (
+        {/* --- FOOTER: CTA PRINCIPAL --- */}
+        <div className="border-t border-surface-border pt-5">
+          <p className="text-xs font-semibold text-slate-500 mb-4 text-center">
+            Tu pedido será enviado directamente al teléfono de Ildefonso.
+          </p>
+          {isActionable ? (
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full rounded-button bg-brand-500 px-5 py-4 text-lg font-black text-white shadow-md transition hover:bg-brand-600"
+            >
+              💳 Realizar Pago
+            </button>
+          ) : isCompleted ? (
+            order.comprobanteUrl ? (
               <button
                 type="button"
-                onClick={handleCancelOrder}
-                className="text-red-500 font-medium text-sm hover:text-red-700 transition"
+                onClick={() => setIsModalOpen(true)}
+                className="w-full rounded-button border border-surface-border bg-surface-bg px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-surface-border hover:text-slate-900"
               >
-                Cancelar
+                Ver Recibo
               </button>
-            )}
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="text-amber-500 font-semibold text-sm transition-colors"
-            >
-              Ver Detalles
-            </button>
-          </div>
+            ) : null
+          ) : isCancelled ? (
+            <div className="rounded-button border border-status-danger/20 bg-status-danger/10 px-5 py-3 text-center text-sm font-bold text-status-danger">
+              Pedido Cancelado
+            </div>
+          ) : null}
         </div>
       </div>
       {/* --- MODAL (Reutilizamos tu lógica existente) --- */}
@@ -165,7 +156,7 @@ export const MobileOrderCard = ({
         <Modal onClose={() => setIsModalOpen(false)} title="Gestión del Pedido">
           <div className="space-y-4">
             {/* --- SUBIDA DE COMPROBANTE --- */}
-            {order.estado === "Entregado" && !comprobanteUrl && (
+            {order.estado !== "Pago Completado" && order.estado !== "Cancelado" && !comprobanteUrl && (
               <UploadReceiptForm
                 orderId={order._id}
                 onReceiptUploaded={handleReceiptUploaded}
@@ -178,20 +169,19 @@ export const MobileOrderCard = ({
                 href={order.comprobanteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                // CAMBIO: py-3 en móvil, py-4 en desktop. text-sm en móvil.
-                className="w-full py-3 md:py-4 bg-blue-50 text-blue-600 font-semibold rounded-xl block text-center hover:bg-blue-100 transition border border-blue-200"
+                className="w-full py-3 md:py-4 bg-brand-50 text-brand-700 font-bold rounded-button block text-center hover:bg-brand-100 transition-colors border border-brand-200"
               >
-                Ver comprobante
+                Abrir Comprobante
               </a>
             ) : order.metodoPago === 'Efectivo' ? (
-              <div className="p-4 bg-green-50 rounded-xl text-center border border-green-100">
-                  <p className="text-green-700 font-medium text-sm">
+              <div className="p-4 bg-emerald-50 rounded-button text-center border border-emerald-100">
+                  <p className="text-emerald-700 font-bold text-sm">
                     ✅ Pago reportado en Efectivo ({order.monedaPago || 'N/A'})
                   </p>
               </div>
             ) : (
-              <div className="p-4 bg-gray-50 rounded-xl text-center border border-gray-100">
-                <p className="text-gray-500 text-sm">
+              <div className="p-4 bg-surface-bg rounded-button text-center border border-surface-border">
+                <p className="text-slate-500 font-medium text-sm">
                   No hay comprobante disponible.
                 </p>
               </div>
@@ -201,15 +191,15 @@ export const MobileOrderCard = ({
             {isAdmin &&
               order.estado !== "Pago Completado" &&
               order.estado !== "Cancelado" && (
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4 pt-4 border-t border-surface-border">
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
                       Cambiar Estado
                     </p>
                     <select
                       value={order.estado}
                       onChange={(e) => handleUpdateStatus(e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                      className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 text-sm font-bold text-slate-800 shadow-sm outline-none transition focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     >
                       <option value="Pendiente">Pendiente</option>
                       <option value="En preparación">En preparación</option>
@@ -224,7 +214,7 @@ export const MobileOrderCard = ({
                     <button
                       type="button"
                       onClick={handleCancelOrder}
-                      className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
+                      className="w-full py-3 md:py-4 bg-status-danger/10 text-status-danger font-bold rounded-button hover:bg-status-danger/20 transition-colors border border-status-danger/20"
                     >
                       Cancelar Pedido
                     </button>
@@ -238,20 +228,20 @@ export const MobileOrderCard = ({
                           }
                         }
                       }}
-                      className="w-full py-3 md:py-4 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
+                      className="w-full py-3 md:py-4 bg-status-danger text-white font-bold rounded-button hover:bg-red-700 transition shadow-md"
                     >
-                      Eliminar Pedido
+                      Eliminar Pedido Definitivamente
                     </button>
                   </div>
                 </div>
               )}
 
             {!isAdmin && order.estado === "Pendiente" && (
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-4 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={handleCancelOrder}
-                  className="w-full py-3 md:py-4 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition border border-red-100"
+                  className="w-full py-3 md:py-4 bg-status-danger/10 text-status-danger font-bold rounded-button hover:bg-status-danger/20 transition-colors border border-status-danger/20"
                 >
                   Cancelar Pedido
                 </button>
@@ -259,35 +249,34 @@ export const MobileOrderCard = ({
             )}
 
             {/* --- NOTAS DEL PEDIDO --- */}
-            <div className="pt-2">
-              <h5 className="text-sm font-bold text-gray-700 mb-2">
-                Notas del Pedido
+            <div className="pt-4 border-t border-surface-border">
+              <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+                Notas Internas
               </h5>
               {isAdmin ? (
                 <>
                   <textarea
                     value={nota}
                     onChange={(e) => setNota(e.target.value)}
-                    placeholder="Escribe detalles del pago..."
+                    placeholder="Escribe detalles o notas del pedido..."
                     rows="3"
-                    // CAMBIO: text-base evita que el iPhone haga zoom al escribir
-                    className="w-full p-3 text-base border border-gray-300 rounded-xl resize-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full p-4 text-sm font-medium bg-surface-bg border border-surface-border rounded-button resize-none text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={handleSavedNote}
-                    className="mt-3 w-full py-3 md:py-4 bg-gray-800 text-white font-medium rounded-xl hover:bg-gray-900 transition"
+                    className="mt-3 w-full py-3 md:py-4 bg-brand-500 text-white font-bold rounded-button hover:bg-brand-600 shadow-md transition-colors"
                   >
                     Guardar Nota
                   </button>
                 </>
               ) : (
-                <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl text-gray-700 text-sm">
+                <div className="p-4 bg-surface-bg border border-surface-border rounded-button text-slate-700 text-sm font-medium">
                   {nota && nota.trim().length > 0 ? (
                     <p>{nota}</p>
                   ) : (
-                    <p className="text-gray-400 italic">
-                      Sin notas del administrador.
+                    <p className="text-slate-400 italic">
+                      Sin observaciones.
                     </p>
                   )}
                 </div>
