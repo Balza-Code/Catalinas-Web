@@ -21,6 +21,7 @@ import ClientDirectory from './pages/ClientDirectory.jsx';
 import InvestmentCalculator from './components/InvestmentCalculator.jsx';
 import ProductionPanel from './pages/ProductionPanel.jsx';
 import FinancialDashboard from './components/FinancialDashboard.jsx';
+import Home from './pages/Home.jsx';
 import { HashRouter } from 'react-router-dom';
 
 const protectedRoutes = {
@@ -45,7 +46,7 @@ const protectedRoutes = {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <RedirectToRole /> // decide si va a /admin o /cliente según rol
+    element: <Home />
   },
   {
     path: '/login',

@@ -16,7 +16,7 @@ export const getBatches = async (req, res) => {
       .populate({
         path: 'recetaId',
         select: 'nombre rendimientoEstimado productoAsociado tipoProductoAsociado unidadesPorPaquete',
-        populate: { path: 'productoAsociado', select: 'nombre stock' },
+        populate: { path: 'productoAsociado', select: 'nombre stock precio costoProduccion' },
       })
       .sort({ createdAt: -1 });
 
@@ -60,7 +60,7 @@ export const startBatch = async (req, res) => {
     const tandaPopulada = await ProductionBatch.findById(nuevaTanda._id).populate({
       path: 'recetaId',
       select: 'nombre rendimientoEstimado productoAsociado tipoProductoAsociado unidadesPorPaquete',
-      populate: { path: 'productoAsociado', select: 'nombre stock' },
+      populate: { path: 'productoAsociado', select: 'nombre stock precio costoProduccion' },
     });
 
     res.status(201).json(tandaPopulada);
@@ -123,7 +123,7 @@ export const closeBatch = async (req, res) => {
     const tandaPopulada = await ProductionBatch.findById(id).populate({
       path: 'recetaId',
       select: 'nombre rendimientoEstimado productoAsociado tipoProductoAsociado unidadesPorPaquete',
-      populate: { path: 'productoAsociado', select: 'nombre stock' },
+      populate: { path: 'productoAsociado', select: 'nombre stock precio costoProduccion' },
     });
 
     res.json({

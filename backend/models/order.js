@@ -64,6 +64,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '' //Por defecto las notas esta vacias
     }
+    ,
+    urgente: {
+      type: Boolean,
+      default: false,
+    }
   },
   {
     timestamps: true,

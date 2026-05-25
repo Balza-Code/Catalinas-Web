@@ -106,7 +106,7 @@ export async function createOrder(req, res) {
 export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { estado, notas } = req.body; // Aceptamos 'estado' O 'notas'
+    const { estado, notas, urgente } = req.body; // Aceptamos 'estado', 'notas' o 'urgente'
 
     const order = await Order.findById(id);
     if (!order) {
@@ -140,6 +140,11 @@ export async function updateOrder(req, res) {
     // (permitimos 'notas === ""' para poder borrar las notas)
     if (notas || notas === "") {
       fieldsToUpdate.notas = notas;
+    }
+
+    // Si nos envían 'urgente', lo añadimos (permitir tanto true como false)
+    if (typeof urgente !== 'undefined') {
+      fieldsToUpdate.urgente = Boolean(urgente);
     }
 
     // Si no nos enviaron nada para actualizar, devolvemos un error
@@ -203,7 +208,8 @@ export async function uploadReceipt(req, res) {
         { 
           metodoPago: 'Efectivo',
           monedaPago: monedaPago || 'N/A',
-          estado: 'Por Verificar'
+          estado: 'Pago Completado',
+          pagado: order.total,
         },
         { new: true }
       );
@@ -216,7 +222,7 @@ export async function uploadReceipt(req, res) {
 
     // Lógica para Transferencia/Pago Móvil
     if (!req.file) {
-      return res.status(400).json({ mensaje: "No se subió ningún archivo" });
+      return res.status(400).json({ mensaje: "No se recibió ningún archivo de comprobante en la petición." });
     }
 
     const result = await uploadToCloudinary(req.file.buffer);
@@ -226,8 +232,9 @@ export async function uploadReceipt(req, res) {
       { 
         comprobanteUrl: result.secure_url,
         metodoPago: 'Transferencia/Pago Móvil',
-        monedaPago: 'Bs',
-        estado: 'Por Verificar'
+        monedaPago: monedaPago || 'Bs',
+        estado: 'Pago Completado',
+        pagado: order.total,
       },
       { new: true }
     );
