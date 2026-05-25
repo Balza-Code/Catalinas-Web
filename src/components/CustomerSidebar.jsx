@@ -9,7 +9,7 @@ export const CustomerSidebar = ({ logout }) => {
   ];
 
   return (
-    <nav className="sidebar">
+    <nav className="sidebar flex flex-col h-full bg-surface-card border-r border-surface-border p-4 gap-2">
       {menuItems.map((item) => {
         const Icon = item.icon;
         return (
@@ -17,19 +17,24 @@ export const CustomerSidebar = ({ logout }) => {
             key={item.id}
             to={item.path}
             end={item.path === '/cliente'}
-            className={({ isActive }) => `flex gap-3 items-center w-full py-4 px-3 rounded-lg transition-colors ${isActive ? 'bg-amber-200 font-bold' : 'hover:bg-amber-100'}`}
+            className={({ isActive }) => `flex gap-3 items-center w-full p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold shadow-sm ring-1 ring-brand-200' : 'bg-surface-bg text-slate-700 hover:bg-surface-border'}`}
             aria-label={item.id}
           >
             {({ isActive }) => (
               <>
-                <Icon style={{ color: isActive ? 'var(--primary-500)' : '#9CA3AF' }} size={20} />
-                <span className="s b3 font-[Inter]" style={{ color: isActive ? 'var(--primary-500)' : undefined }}>{item.id}</span>
+                <Icon className={isActive ? 'text-brand-600' : 'text-slate-500'} size={24} />
+                <span className={`font-['Inter'] ${isActive ? 'text-brand-700' : 'text-slate-600 font-medium'}`}>{item.id}</span>
               </>
             )}
           </NavLink>
         );
       })}
-      <button onClick={logout} className="mt-6 px-3 py-2 text-sm text-gray-600">Cerrar Sesión</button>
+      
+      <div className="mt-auto pt-6 border-t border-surface-border">
+        <button onClick={logout} className="w-full text-left p-4 rounded-button text-slate-600 hover:bg-surface-border hover:text-slate-900 transition-colors font-bold">
+          Cerrar Sesión
+        </button>
+      </div>
     </nav>
   );
 }

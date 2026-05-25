@@ -34,58 +34,69 @@ export const Loginpage = () => {
     }
   };
   return (
-   <div className="min-h-screen flex items-center justify-center bg-[#f5f0e6] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface-bg px-4">
       {showRegister ? (
-        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+        <div className="bg-surface-card p-8 rounded-card border border-surface-border shadow-2xl w-full max-w-md">
           <button
             onClick={() => setShowRegister(false)}
-            className="text-sm text-indigo-600 hover:underline mb-4"
+            className="text-sm text-brand-600 font-bold hover:text-brand-700 transition-colors mb-4 flex items-center gap-1"
           >
-            ← Volver al Login
+            &larr; Volver al Login
           </button>
           <RegisterPage />
         </div>
       ) : (
         <form
           onSubmit={handleLogin}
-          className="bg-white p-6 rounded-lg shadow-md w-full max-w-md"
+          className="bg-surface-card p-8 rounded-card border border-surface-border shadow-2xl w-full max-w-md"
         >
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            Iniciar Sesión
-          </h2>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 mb-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300 "
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 mb-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300 "
-          />
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+              Bienvenido de nuevo
+            </h2>
+            <p className="text-sm font-medium text-slate-500 mt-2">Ingresa tus credenciales para acceder</p>
+          </div>
+          
+          <div className="space-y-4">
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-surface-bg border border-surface-border rounded-button text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-surface-bg border border-surface-border rounded-button text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+            />
+          </div>
+
+          {error && (
+            <div className="mt-4 p-3 rounded-button bg-status-danger/10 border border-status-danger/20 text-center">
+              <p className="text-status-danger text-sm font-semibold">{error}</p>
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-(--primary-500) text-white py-2 rounded-md hover:bg-(--primary-600) transition-colors duration-200"
+            className="w-full bg-brand-500 text-white font-bold py-3 mt-6 rounded-button hover:bg-brand-600 shadow-md transition-all duration-200"
           >
-            Acceder
+            Acceder al Sistema
           </button>
-          {error && (
-            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
-          )}
-          <p className="text-sm text-center mt-4">
-            ¿No tienes Cuenta?{" "}
+          
+          <p className="text-sm text-center text-slate-500 font-medium mt-6">
+            ¿Aún no tienes una cuenta?{" "}
             <button
               type="button"
               onClick={() => setShowRegister(true)}
-              className="text-indigo-600 hover:underline"
+              className="text-brand-600 hover:text-brand-700 font-bold transition-colors ml-1"
             >
-              Unirme
+              Regístrate aquí
             </button>
           </p>
         </form>

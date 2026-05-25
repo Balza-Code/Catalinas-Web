@@ -9,6 +9,16 @@ const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
   const [uploading, setUploading] = useState(false);
   const { showModal } = useModal();
 
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showModal({ title: 'Copiado', message: `${text} copiado al portapapeles.` });
+    } catch (error) {
+      console.error('Error copiando al portapapeles', error);
+      showModal({ title: 'Error', message: 'No se pudo copiar. Intenta manualmente.' });
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -46,69 +56,117 @@ const UploadReceiptForm = ({ orderId, onReceiptUploaded }) => {
   return ( 
     <form
       onSubmit={handleSubmit}
-      className="upload-form w-full mt-4 flex flex-col gap-4 bg-white p-6 rounded-lg shadow-md max-w-md"
+      className="upload-form w-full mt-4 flex flex-col gap-6 bg-white p-4 rounded-3xl shadow-lg"
     >
-      <h3 className="text-lg font-semibold text-gray-800">Reportar Pago</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-3xl bg-blue-50 p-4">
+          <h3 className="text-xl font-bold text-slate-900">1. Realiza tu transferencia o Pago Móvil</h3>
+          <div className="mt-4 flex justify-center">
+            <img
+              src="/qr-pago.png"
+              alt="Código QR de Pago Móvil"
+              className="w-32 h-32 rounded-3xl border border-blue-100 object-cover"
+            />
+          </div>
+        </div>
 
-      {/* Selector de Método de Pago */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
-        <select
-          value={metodoPago}
-          onChange={(e) => setMetodoPago(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-amber-200"
-        >
-          <option value="Transferencia/Pago Móvil">Transferencia / Pago Móvil</option>
-          <option value="Efectivo">Efectivo</option>
-        </select>
+        <div className="rounded-3xl bg-slate-50 p-4">
+          <h3 className="text-xl font-bold text-slate-900">Datos para transferir</h3>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <p className="text-sm font-medium text-slate-700">Teléfono</p>
+                <p className="text-lg font-semibold text-slate-900">04XX-XXXXXXX</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('04XX-XXXXXXX')}
+                className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+              >
+                Copiar
+              </button>
+            </div>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <p className="text-sm font-medium text-slate-700">Cédula</p>
+                <p className="text-lg font-semibold text-slate-900">V-XXXXXXXX</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('V-XXXXXXXX')}
+                className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+              >
+                Copiar
+              </button>
+            </div>
+            <div className="flex items-center justify-between pt-3">
+              <div>
+                <p className="text-sm font-medium text-slate-700">Banco</p>
+                <p className="text-lg font-semibold text-slate-900">Banco de Venezuela</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('Banco de Venezuela')}
+                className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Select Moneda (Solo Efectivo) */}
-      {metodoPago === "Efectivo" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
-          <select
-            value={monedaPago}
-            onChange={(e) => setMonedaPago(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-amber-200"
-          >
-            <option value="Bs">Bolívares (Bs)</option>
-            <option value="USD">Dólares (USD)</option>
-          </select>
-        </div>
-      )}
+      <div className="rounded-3xl bg-amber-50 p-4">
+        <h3 className="text-xl font-bold text-slate-900">2. Sube tu comprobante</h3>
+        <p className="mt-2 text-sm text-slate-700">Selecciona el método de pago y adjunta tu comprobante para confirmar.</p>
 
-      {/* Input de archivo (Solo Transferencia) */}
-      {metodoPago !== "Efectivo" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Comprobante</label>
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={(e) => setFile(e.target.files[0])}
-            className="block w-full text-sm text-gray-700 
-                      file:mr-4 file:py-2 file:px-4 
-                      file:rounded file:border-0 
-                      file:text-sm file:font-semibold 
-                      file:bg-amber-400 file:text-white 
-                      hover:file:bg-amber-500 
-                      cursor-pointer"
-          />
-          <p className="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, PNG, PDF</p>
-        </div>
-      )}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Método de Pago</label>
+            <select
+              value={metodoPago}
+              onChange={(e) => setMetodoPago(e.target.value)}
+              className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-200"
+            >
+              <option value="Transferencia/Pago Móvil">Transferencia / Pago Móvil</option>
+              <option value="Efectivo">Efectivo</option>
+            </select>
+          </div>
 
-      {/* Botón de acción */}
-      <button
-        type="submit"
-        disabled={uploading}
-        className={`w-full px-4 py-2 rounded text-white font-medium transition mt-2
-          ${uploading 
-            ? "bg-gray-400 cursor-not-allowed" 
-            : "bg-green-500 hover:bg-green-600"}`}
-      >
-        {uploading ? "Procesando..." : (metodoPago === 'Efectivo' ? "Reportar Pago" : "Subir Comprobante")}
-      </button>
+          {metodoPago === "Efectivo" ? (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Moneda</label>
+              <select
+                value={monedaPago}
+                onChange={(e) => setMonedaPago(e.target.value)}
+                className="w-full border border-slate-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-200"
+              >
+                <option value="Bs">Bolívares (Bs)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </div>
+          ) : (
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Comprobante</label>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={(e) => setFile(e.target.files[0])}
+                className="block w-full text-sm text-slate-700 rounded-2xl border border-slate-300 bg-white px-4 py-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-amber-500 file:text-white hover:file:bg-amber-600"
+              />
+              <p className="text-xs text-slate-500 mt-1">Formatos permitidos: JPG, PNG, PDF</p>
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={uploading}
+          className={`mt-5 w-full rounded-3xl text-white text-center text-2xl font-bold px-6 py-4 transition ${uploading ? "bg-slate-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}
+        >
+          {uploading ? "Procesando..." : "Subir Comprobante"}
+        </button>
+      </div>
     </form>
   );
 };

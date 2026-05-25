@@ -31,46 +31,56 @@ export const RegisterPage = () => {
   };
 
   return (
-   <form
+    <form
       onSubmit={handleRegister}
-      className=" "
+      className="w-full"
     >
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-        Registrarse
-      </h2>
-      <input
-        type="text"
-        placeholder="Nombre"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-        required
-        className="w-full px-4 py-2 mb-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300"
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        className="w-full px-4 py-2 mb-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300"
-      />
-      <input
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        className="w-full px-4 py-2 mb-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-300"
-      />
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+          Crea tu cuenta
+        </h2>
+        <p className="text-sm font-medium text-slate-500 mt-2">Únete a la plataforma hoy mismo</p>
+      </div>
+      
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="Nombre completo"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          required
+          className="w-full px-4 py-3 bg-surface-bg border border-surface-border rounded-button text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+        />
+        <input
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full px-4 py-3 bg-surface-bg border border-surface-border rounded-button text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="w-full px-4 py-3 bg-surface-bg border border-surface-border rounded-button text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+        />
+      </div>
+
+      {error && (
+        <div className="mt-4 p-3 rounded-button bg-status-danger/10 border border-status-danger/20 text-center">
+          <p className="text-status-danger text-sm font-semibold">{error}</p>
+        </div>
+      )}
+
       <button
         type="submit"
-        className="w-full bg-(--primary-500) text-white py-2 rounded-md hover:bg-(--primary-600) transition-colors duration-200"
+        className="w-full bg-brand-500 text-white font-bold py-3 mt-6 rounded-button hover:bg-brand-600 shadow-md transition-all duration-200"
       >
-        Crear cuenta
+        Completar Registro
       </button>
-      {error && (
-        <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
-      )}
     </form>
   );
 };
