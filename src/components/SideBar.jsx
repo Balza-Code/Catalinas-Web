@@ -19,27 +19,43 @@ export const SideBar = ({ logout }) => {
   ];
 
   return (
-    <nav className="sidebar">
-      {menuItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <NavLink
-            key={item.id}
-            to={item.path}
-            end={item.path === '/admin'}
-            className={({ isActive }) => `flex gap-3 items-center w-full py-4 px-3 rounded-lg transition-colors ${isActive ? 'bg-amber-200 font-bold' : 'hover:bg-amber-100'}`}
-            aria-label={item.id}
-          >
-            {({ isActive }) => (
-              <>
-                <Icon style={{ color: isActive ? 'var(--primary-500)' : '#9CA3AF' }} size={20} />
-                <span className="s b3 font-[Inter]" style={{ color: isActive ? 'var(--primary-500)' : undefined }}>{item.id}</span>
-              </>
-            )}
-          </NavLink>
-        );
-      })}
-      <button onClick={logout} className="mt-6 px-3 py-2 text-sm text-gray-600">Cerrar Sesión</button>
+    <nav className="sidebar flex flex-col h-full bg-surface-card border-r border-surface-border shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.id}
+              to={item.path}
+              end={item.path === '/admin'}
+              className={({ isActive }) => `flex gap-3 items-center w-full py-3 px-4 rounded-button transition-all duration-200 ${
+                isActive 
+                  ? 'bg-brand-50 text-brand-700 font-bold shadow-sm ring-1 ring-brand-500/20' 
+                  : 'text-slate-500 hover:bg-surface-bg hover:text-slate-800'
+              }`}
+              aria-label={item.id}
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon className={isActive ? 'text-brand-600' : 'text-slate-400'} size={20} />
+                  <span className={`font-['Inter'] text-sm ${isActive ? 'font-bold' : 'font-medium'}`}>
+                    {item.id}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+      </div>
+      
+      <div className="p-4 border-t border-surface-border bg-surface-card">
+        <button 
+          onClick={logout} 
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-semibold text-status-danger bg-status-danger/5 hover:bg-status-danger/10 rounded-button transition-colors border border-status-danger/10"
+        >
+          Cerrar Sesión
+        </button>
+      </div>
     </nav>
   );
 };

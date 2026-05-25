@@ -23,6 +23,23 @@ export default function ExpenseForm({ onExpenseCreated }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleMetodoSelect = (method) => {
+    // Sync moneda depending on selected caja
+    const moneda = method === 'Efectivo Bs' ? 'Bs' : 'USD';
+    setFormData((prev) => ({ ...prev, metodoPago: method, moneda, tasaCambio: moneda === 'Bs' ? prev.tasaCambio : '' }));
+  };
+
+  const quickConcepts = [
+    { key: 'nomina', label: 'Nómina' },
+    { key: 'transporte', label: 'Transporte' },
+    { key: 'material', label: 'Material' },
+    { key: 'servicios', label: 'Servicios' },
+  ];
+
+  const applyQuickConcept = (label) => {
+    setFormData((prev) => ({ ...prev, descripcion: label }));
+  };
+
   const handleOpenHistory = () => {
     showModal({
       title: 'Historial de Egresos',
@@ -84,8 +101,12 @@ export default function ExpenseForm({ onExpenseCreated }) {
       }
 
       await createExpense(payload);
-      
-      showModal({ title: 'Éxito', message: 'Gasto registrado correctamente.' });
+
+      if (onExpenseCreated) {
+        onExpenseCreated();
+      } else {
+        showModal({ title: 'Éxito', message: 'Gasto registrado correctamente.' });
+      }
       
       refreshStats();
 
@@ -98,10 +119,6 @@ export default function ExpenseForm({ onExpenseCreated }) {
         descripcion: ''
       });
 
-      if (onExpenseCreated) {
-        onExpenseCreated();
-      }
-
     } catch (error) {
       console.error(error);
       showModal({ title: 'Error', message: error.message || 'Hubo un error al registrar el gasto.' });
@@ -111,52 +128,52 @@ export default function ExpenseForm({ onExpenseCreated }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100 max-w-md mx-auto w-full">
-      <div className="flex justify-between items-center mb-4 border-b pb-2">
-        <h2 className="text-xl font-bold text-gray-800">Registrar Nuevo Gasto</h2>
+    <div className="bg-surface-card p-8 rounded-card border border-surface-border shadow-lg max-w-md mx-auto w-full">
+      <div className="flex justify-between items-center mb-6 border-b border-surface-border pb-3">
+        <h2 className="text-xl font-black text-slate-800 tracking-tight">Registrar Nuevo Gasto</h2>
         <button 
           onClick={handleOpenHistory}
-          className="text-sm font-semibold text-blue-600 hover:text-blue-800 underline transition-colors"
+          className="text-sm font-bold text-brand-600 hover:text-brand-800 hover:underline transition-colors bg-brand-50 px-3 py-1 rounded-button"
         >
           Historial
         </button>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-3 mb-6">
         <button 
           type="button" 
           onClick={handleNominaPapa}
-          className="flex-1 bg-slate-900 text-white text-xs font-semibold py-2 rounded shadow hover:bg-slate-800 transition-colors"
+          className="flex-1 bg-surface-bg border border-surface-border text-slate-700 text-xs font-bold py-2.5 rounded-button shadow-sm hover:bg-surface-border transition-colors"
         >
           Nómina Papá ($40)
         </button>
         <button 
           type="button" 
           onClick={handleNominaMia}
-          className="flex-1 bg-slate-900 text-white text-xs font-semibold py-2 rounded shadow hover:bg-slate-800 transition-colors"
+          className="flex-1 bg-surface-bg border border-surface-border text-slate-700 text-xs font-bold py-2.5 rounded-button shadow-sm hover:bg-surface-border transition-colors"
         >
           Mi Nómina ($20)
         </button>
       </div>
       
-      <div className="mb-6 grid grid-cols-3 gap-2">
-         <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-200">
-           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-1">Físico USD</p>
-           <p className="font-bold text-slate-800 text-base">${Number(stats.caja?.efectivoUSD || 0).toFixed(2)}</p>
+      <div className="mb-6 grid grid-cols-3 gap-3">
+         <div className="bg-surface-bg p-3 rounded-card text-center border border-surface-border shadow-sm">
+           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Físico USD</p>
+           <p className="font-black text-slate-800 text-lg">${Number(stats.caja?.efectivoUSD || 0).toFixed(2)}</p>
          </div>
-         <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-200">
-           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-1">Físico Bs</p>
-           <p className="font-bold text-slate-800 text-base">${Number(stats.caja?.efectivoBs || 0).toFixed(2)}</p>
+         <div className="bg-surface-bg p-3 rounded-card text-center border border-surface-border shadow-sm">
+           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Físico Bs</p>
+           <p className="font-black text-slate-800 text-lg">${Number(stats.caja?.efectivoBs || 0).toFixed(2)}</p>
          </div>
-         <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-200">
-           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-1">Digital</p>
-           <p className="font-bold text-slate-800 text-base">${Number(stats.caja?.digital || 0).toFixed(2)}</p>
+         <div className="bg-surface-bg p-3 rounded-card text-center border border-surface-border shadow-sm">
+           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Digital</p>
+           <p className="font-black text-slate-800 text-lg">${Number(stats.caja?.digital || 0).toFixed(2)}</p>
          </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monto *</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Monto *</label>
           <input
             type="number"
             name="monto"
@@ -165,28 +182,45 @@ export default function ExpenseForm({ onExpenseCreated }) {
             min="0"
             step="0.01"
             required
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            placeholder="Ej. 150.50"
+            className="w-full bg-surface-bg border border-surface-border rounded-button p-4 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors text-4xl text-center font-black shadow-inner"
+            placeholder="0.00"
           />
         </div>
 
+        {/* Selector visual de origen de fondos (radio cards) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Moneda *</label>
-          <select
-            name="moneda"
-            value={formData.moneda}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="Bs">Bolívares (Bs)</option>
-            <option value="USD">Dólares (USD)</option>
-          </select>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Cuenta / Caja *</label>
+          <div role="radiogroup" aria-label="Origen de fondos" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { key: 'Efectivo USD', label: '💵 Efectivo USD' },
+              { key: 'Efectivo Bs', label: '🇻🇪 Efectivo Bs' },
+              { key: 'Digital', label: '💳 Digital / Banco' },
+            ].map((opt) => {
+              const active = formData.metodoPago === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => handleMetodoSelect(opt.key)}
+                  className={`w-full text-left p-3 rounded-card border transition-all flex flex-col justify-between min-h-[90px] ${active ? 'border-brand-500 bg-brand-50 shadow-md ring-1 ring-brand-500' : 'border-surface-border bg-surface-bg hover:border-brand-300 hover:bg-surface-border hover:shadow-sm'} focus:outline-none`}
+                >
+                  <span className="text-2xl mb-1">{opt.label.split(' ')[0]}</span>
+                  <div>
+                    <div className="font-bold text-xs text-slate-800 leading-tight">{opt.label.split(' ').slice(1).join(' ')}</div>
+                    {active && <div className="text-brand-700 font-bold text-[10px] mt-1">Seleccionado</div>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {formData.moneda === 'Bs' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tasa de Cambio (Bs por USD) *</label>
+        {/* Tasa dinamica: aparece si se selecciona Efectivo Bs */}
+        {formData.metodoPago === 'Efectivo Bs' && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Tasa de Cambio (Bs por USD) *</label>
             <input
               type="number"
               name="tasaCambio"
@@ -195,35 +229,20 @@ export default function ExpenseForm({ onExpenseCreated }) {
               min="0"
               step="0.01"
               required
-              className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="w-full bg-surface-bg border border-surface-border rounded-button p-3 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               placeholder="Ej. 36.5"
             />
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Caja (Forma de Pago) *</label>
-          <select
-            name="metodoPago"
-            value={formData.metodoPago}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="Efectivo USD">Efectivo ($ Físico)</option>
-            <option value="Efectivo Bs">Efectivo (Bs Físico)</option>
-            <option value="Digital">Digital (Banco)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Categoría *</label>
           <select
             name="categoria"
             value={formData.categoria}
             onChange={handleChange}
             required
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full bg-surface-bg border border-surface-border rounded-button p-3 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 appearance-none font-medium"
           >
             <option value="Materia Prima">Materia Prima</option>
             <option value="Servicios">Servicios</option>
@@ -232,20 +251,32 @@ export default function ExpenseForm({ onExpenseCreated }) {
             <option value="Varios">Varios</option>
           </select>
           
-          <div className={`mt-2 p-2 rounded-md ${activeLimit.bg} border border-dashed flex justify-between items-center bg-opacity-50`}>
-             <span className="text-xs text-slate-600 font-medium">Tope de {activeLimit.label}:</span>
-             <span className={`text-sm font-bold ${activeLimit.color}`}>${Number(activeLimit.value || 0).toFixed(2)}</span>
+          <div className={`mt-3 p-2.5 rounded-button ${activeLimit.bg} border border-dashed flex justify-between items-center bg-opacity-50`}>
+             <span className="text-xs text-slate-600 font-bold">Tope de {activeLimit.label}:</span>
+             <span className={`text-sm font-black ${activeLimit.color}`}>${Number(activeLimit.value || 0).toFixed(2)}</span>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Descripción</label>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {quickConcepts.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => applyQuickConcept(c.label)}
+                className="text-xs px-3 py-1.5 rounded-button bg-surface-bg border border-surface-border text-slate-700 hover:bg-surface-border focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold transition-colors"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
           <input
             type="text"
             name="descripcion"
             value={formData.descripcion}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="w-full bg-surface-bg border border-surface-border rounded-button p-3 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-colors"
             placeholder="Detalles del gasto (Opcional)"
           />
         </div>
@@ -253,14 +284,14 @@ export default function ExpenseForm({ onExpenseCreated }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors flex justify-center items-center mt-2 disabled:opacity-50"
+          className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 px-4 rounded-button shadow-md transition-all flex justify-center items-center mt-6 disabled:opacity-50"
         >
           {loading ? (
             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-          ) : 'Registrar Gasto'}
+          ) : 'Registrar Gasto Definitivo'}
         </button>
       </form>
     </div>

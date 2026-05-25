@@ -12,14 +12,14 @@ export default function Modal({ open = true, title, message, onClose = () => {},
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="max-h-9/12 overflow-y-auto bg-white rounded-3xl shadow-2xl p-6 w-full max-w-3xl relative animate-fade-in flex flex-col" onClick={(e) => e.stopPropagation()}>
-        {title && <h2 className="h6 text-gray-600 mb-4">{title}</h2>}
+    <div className="fixed inset-0 z-50 flex justify-center bg-black/50 p-0 md:p-4 md:items-center" onClick={onClose}>
+      <div className="relative z-60 w-full h-full bg-white md:h-auto md:max-h-[90vh] md:max-w-3xl md:rounded-2xl overflow-y-auto p-4 pb-28 md:p-6 md:pb-6" onClick={(e) => e.stopPropagation()}>
+        {title && <h2 className="text-xl font-bold text-slate-900 mb-4">{title}</h2>}
 
         {children ? (
           <div className="space-y-4">{children}</div>
         ) : (
-          <div className="text-sm text-gray-700 mb-4">{message}</div>
+          <div className="text-sm text-slate-700 mb-4">{message}</div>
         )}
 
         {!children && (
@@ -30,9 +30,7 @@ export default function Modal({ open = true, title, message, onClose = () => {},
           </div>
         )}
 
-        {children && (
-          <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
-        )}
+        <button onClick={onClose} className="absolute top-4 right-4 rounded-full bg-slate-100 p-3 text-slate-600 shadow-sm hover:bg-slate-200">✕</button>
       </div>
     </div>
   );

@@ -3,7 +3,17 @@ import Modal from '../components/Modal';
 
 const ModalContext = createContext(null);
 
-export const useModal = () => useContext(ModalContext);
+export const useModal = () => {
+  const ctx = useContext(ModalContext);
+  if (ctx == null) {
+    // Provide safe no-op fallbacks to avoid runtime crashes when provider is missing
+    return {
+      showModal: (opts = {}) => console.warn('ModalProvider missing — showModal called with', opts),
+      hideModal: () => console.warn('ModalProvider missing — hideModal called'),
+    };
+  }
+  return ctx;
+};
 
 export function ModalProvider({ children }) {
   const [modalState, setModalState] = useState({

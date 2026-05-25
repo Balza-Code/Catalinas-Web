@@ -44,45 +44,45 @@ export function MobileBottomNav() {
   const navItems = isClient ? clientItems : adminItems;
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white z-50 md:hidden">
+    <div className="fixed bottom-0 left-0 w-full bg-surface-card z-50 md:hidden border-t border-surface-border shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)]">
       {/* Drawer Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 transition-opacity" onClick={() => setIsMenuOpen(false)} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" onClick={() => setIsMenuOpen(false)} />
       )}
       
       {/* Drawer Content */}
-      <div className={`fixed bottom-24 left-4 right-4 bg-white rounded-3xl p-6 shadow-2xl z-50 transform transition-transform duration-300 origin-bottom ${isMenuOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed bottom-24 left-4 right-4 bg-surface-card border border-surface-border rounded-card p-6 shadow-2xl z-50 transform transition-all duration-300 origin-bottom ${isMenuOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 pointer-events-none translate-y-4'}`}>
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-slate-800">Menú Administrativo</h3>
-          <button onClick={() => setIsMenuOpen(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+          <button onClick={() => setIsMenuOpen(false)} className="p-2 bg-surface-bg rounded-button text-slate-500 hover:bg-surface-border transition-colors">
             <CloseIcon size={20} />
           </button>
         </div>
         <div className="flex flex-col gap-2">
-          <NavLink to="/admin/clientes" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
-            <UserIcon size={24} />
+          <NavLink to="/admin/clientes" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold border border-brand-200 shadow-sm' : 'bg-surface-bg text-slate-700 hover:bg-surface-border border border-transparent'}`}>
+            <UserIcon size={24} className={({ isActive }) => isActive ? 'text-brand-600' : 'text-slate-500'} />
             <span>Directorio de Clientes</span>
           </NavLink>
-          <NavLink to="/admin/productos" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
+          <NavLink to="/admin/productos" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold border border-brand-200 shadow-sm' : 'bg-surface-bg text-slate-700 hover:bg-surface-border border border-transparent'}`}>
             <AddIcon size={24} />
             <span>Agregar Productos</span>
           </NavLink>
-          <NavLink to="/admin/finanzas" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
+          <NavLink to="/admin/finanzas" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold border border-brand-200 shadow-sm' : 'bg-surface-bg text-slate-700 hover:bg-surface-border border border-transparent'}`}>
             <BoardIcon size={24} />
             <span>Inteligencia Financiera</span>
           </NavLink>
-          <NavLink to="/admin/calculadora" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
+          <NavLink to="/admin/calculadora" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold border border-brand-200 shadow-sm' : 'bg-surface-bg text-slate-700 hover:bg-surface-border border border-transparent'}`}>
             <SalesIcon size={24} />
             <span>Calculadora de Recetas</span>
           </NavLink>
-          <NavLink to="/admin/produccion" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-2xl transition-colors ${isActive ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
+          <NavLink to="/admin/produccion" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 p-4 rounded-button transition-colors ${isActive ? 'bg-brand-50 text-brand-700 font-bold border border-brand-200 shadow-sm' : 'bg-surface-bg text-slate-700 hover:bg-surface-border border border-transparent'}`}>
             <BoardIcon size={24} />
             <span>Control de Producción</span>
           </NavLink>
         </div>
       </div>
 
-      <div className="flex justify-between items-center h-24 border-t border-slate-100 px-2 pb-2">
+      <div className="flex justify-between items-center h-20 px-2 pb-safe pt-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           
@@ -91,10 +91,12 @@ export function MobileBottomNav() {
               <button
                 key={item.id}
                 onClick={item.action}
-                className={`flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors gap-1`}
+                className={`flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors gap-1 group`}
               >
-                <Icon style={{ color: isMenuOpen ? 'var(--primary-500)' : '#9CA3AF' }} size={28} />
-                <span className="text-gray-400 font-[Inter]" style={{ color: isMenuOpen ? 'var(--primary-500)' : undefined }}>{item.id}</span>
+                <div className={`p-1.5 rounded-full transition-colors ${isMenuOpen ? 'bg-brand-50' : 'group-hover:bg-surface-bg'}`}>
+                  <Icon className={isMenuOpen ? 'text-brand-500' : 'text-slate-400'} size={24} />
+                </div>
+                <span className={`font-['Inter'] transition-colors ${isMenuOpen ? 'text-brand-600 font-bold' : 'text-slate-400'}`}>{item.id}</span>
               </button>
             );
           }
@@ -104,12 +106,14 @@ export function MobileBottomNav() {
               key={item.id}
               to={item.path}
               end={item.path === '/admin' || item.path === '/cliente'}
-              className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors gap-1 ${isActive ? '' : ''}`}
+              className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full text-xs transition-colors gap-1 group`}
             >
               {({ isActive }) => (
                 <>
-                  <Icon style={{ color: isActive ? 'var(--primary-500)' : '#9CA3AF' }} size={28} />
-                  <span className="text-gray-400 font-[Inter]" style={{ color: isActive ? 'var(--primary-500)' : undefined }}>{item.id}</span>
+                  <div className={`p-1.5 rounded-full transition-colors ${isActive ? 'bg-brand-50' : 'group-hover:bg-surface-bg'}`}>
+                    <Icon className={isActive ? 'text-brand-500' : 'text-slate-400'} size={24} />
+                  </div>
+                  <span className={`font-['Inter'] transition-colors ${isActive ? 'text-brand-600 font-bold' : 'text-slate-400 font-medium'}`}>{item.id}</span>
                 </>
               )}
             </NavLink>
