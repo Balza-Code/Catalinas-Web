@@ -176,3 +176,43 @@ Objetivo: Experiencia "Tienda de Conveniencia Móvil" (estilo Delivery App), pur
 [ ] Completar validación de datos (ej. con Zod o Express Validator) y manejo de errores estandarizado en la API.
 
 [ ] Mejorar gráficos de rendimiento usando Recharts (AreaCharts con degradados suaves).
+
+Fase 11: Optimización de Rendimiento y Escalabilidad (Hardening)
+
+Objetivo: Preparar la infraestructura para manejar crecimiento en volumen de ventas, reduciendo latencias y optimizando consultas de base de datos.
+
+[ ] Implementar paginación en el endpoint GET /api/orders con parámetros query (page, limit) y actualizar el hook useOrders para manejar páginas, incluyendo indicadores de carga y navegación en HistorialDePedidosPage.jsx.
+[ ] Optimizar getAdminClientesResume en adminController.js reemplazando N+1 queries con un aggregation pipeline de MongoDB que una usuarios y pedidos en una sola consulta, reduciendo llamadas de red.
+[ ] Añadir proyecciones de Mongoose (select) en todas las queries de orderController.js y productionController.js para traer solo campos necesarios (ej. excluir items pesados en listados).
+[ ] Implementar límites por defecto (ej. limit(50)) en queries masivas como getAllOrders y getBatches, con opción de override para admins.
+[ ] Crear índices en MongoDB para campos frecuentemente consultados: user en orders, role en users, estado en production_batches, y createdAt en todas las colecciones para optimizar sorts.
+[ ] Implementar estrategia anti-hibernación para Render: añadir endpoint /api/health con ping automático cada 10 minutos desde un cron job o servicio externo para mantener la app activa.
+[ ] Refactorizar ClientDirectory.jsx para usar virtualización (react-window) en la lista de clientes y lazy loading en RecentOrdersPanel para pedidos por usuario.
+
+Fase 12: Rediseño de Interfaz y Experiencia de Usuario (UI/UX overhaul)
+
+Objetivo: Elevar la percepción del producto de un conjunto de funciones a una experiencia de usuario fluida, estéticamente coherente y optimizada para la eficiencia operativa, tanto en web como en dispositivos móviles, reflejando la calidad artesanal del negocio.
+
+[x] Creación del Design System (Guía de Estilo): Unificar la paleta de colores, tipografía, espaciado y variantes de botones (primario, secundario, peligro) para que todas las pantallas compartan la misma identidad visual, eliminando inconsistencias en modales y formularios.
+[x] Unificación de Componentes Operativos: Refactorizar todos los formularios, tablas y modales para que usen exactamente los mismos estilos y comportamientos de Tailwind CSS, reduciendo el ruido visual.
+[x] Optimización de Flujos (UX): Rediseñar la jerarquía visual de pantallas densas como la Calculadora de Recetas para destacar lo más importante. Optimizar el flujo de "Cerrar Tanda" en Producción para que sea más ágil en táctil.
+[x] Microinteracciones y Feedback: Añadir animaciones suaves de entrada (pop-in/slide-up) en modales y toasts, estados de 'hover' y 'active' más claros en botones y tarjetas, y estados de carga (skeletons) para que la app se sienta viva.
+[x] Optimización Móvil Avanzada: Asegurar que el MobileBottomNav y el sidebar como drawer sean perfectos en términos de diseño táctil y estética, con un esquema de Z-Index robusto sin recortes ni interacciones torpes en pantallas pequeñas.
+
+[x] Reestructuración del Dashboard General: Reemplazar las métricas históricas/gráficos por "Widgets de Acción Diaria" (Pedidos para hoy, Tareas pendientes, Alertas de cobranza) para guiar la operación diaria, con reglas de urgencia matemática.
+
+[x] Rediseño de Gestión de Pedidos (Zero-Click States): Eliminar el modal genérico de gestión. Implementar botones de acción rápida en la misma fila de la tabla para transiciones comunes (Ej: Botón directo de "Marcar Entregado"), y relegar acciones destructivas (Eliminar/Cancelar) a un menú secundario protegido.
+
+[x] Vistas Operativas (Kanban/Tabs): Dividir la lista infinita de pedidos en pestañas reactivas (Pendientes | Pagados | Entregados) o columnas arrastrables para separar el flujo de trabajo activo del historial muerto.
+
+## Fase 12: Rediseño de UI/UX y Flexibilidad Operativa
+
+- [x] Gestión de Pedidos (Zero-Click States): Evolucionar el "Historial de Pedidos" plano hacia un Tablero Kanban o sistema de Pestañas (Pendientes | Horneando | Entregados) con botones de acción rápida inline para evitar clics extra en modales.
+
+- [x] Directorio de Clientes V2 (CRM Ágil): Integrar barra de búsqueda reactiva, filtros de deuda y botones directos (WhatsApp/Llamar) en las tarjetas de cliente para agilizar la cobranza.
+
+## Fase 13: Inteligencia de Negocio y Proyecciones
+
+- [x] Sistema de "Cubetas" (Subdivisión de Ganancias): Implementar lógica para dividir automáticamente la "Ganancia Neta Libre" en porcentajes fijos (Ej: 60% Sueldos, 30% Fondo de Crecimiento/Meta Batidora, 10% Emergencia) visible en el módulo de Finanzas.
+
+- [x] Proyección de Producción: Conectar el módulo de Tandas con los precios de venta al público para calcular y mostrar el "Potencial de Venta" y "Margen Estimado" antes de iniciar un horneado.

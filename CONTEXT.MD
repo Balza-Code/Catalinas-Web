@@ -45,6 +45,20 @@ Catalina's Web es una aplicación full stack para gestionar pedidos, roles y ven
 - Sistema de historial de gastos con funcionalidad para revertir extracciones compensando cajas automáticamente, topes visuales interactivos y atajos de 1-Click Nómina en el Form.
 - Gestión Avanzada de Recetas (Calculadora 2.0): Sistema dinámico con persistencia MongoDB para crear recetarios, segmentar matemática de producción (Masa vs Melado Madre), configurar unidades vs empaques y calcular simultáneamente el Margen Neto y el Marcaje sobre Costo en tarjeta Bento Grid, todo unificado a la coleccion de Catálogado de Catalinas.
 - Despliegue optimizado en producción (Render).
+- Fase 8 (Producción) Completada: Módulo de control de tandas de horneado refactorizado con arquitectura limpia (Capa de Servicios) y UI optimizada en Tailwind. Actualiza el inventario en tiempo real.
+- Evolución Omnicanal (POS 2.0): El Punto de Venta pasó de ser solo para ventas presenciales a ser el "Centro de Mando Maestro". Permite asignar clientes, deudas y estados de entrega sin cerrar sesión, ideal para pedidos por WhatsApp.
+- Optimización UX Diaria: El GeneralDashboard fue transformado en un "Action Center" (métricas de urgencia diaria en lugar de históricos), y el Formulario de Gastos se extrajo a un Modal Global en el Header para acceso inmediato desde cualquier pantalla.
+
+## Logros Recientes
+- Refactorización de Producción y control de tandas con actualización de inventario en tiempo real.
+- POS transformado en Centro de Mando de Ventas Omnicanal con cliente, estado y deuda sin salir de sesión.
+- GeneralDashboard renovado como Action Center y ExpenseForm convertido en modal global accesible desde el header.
+- Rediseño Operativo UX (Fase 12 completada): Transición exitosa de tablas planas a Vistas Ágiles. Se implementó un Tablero de Despacho (Kanban/Tabs) con acciones Zero-Click. El CRM incluye píldoras reactivas de filtrado y el módulo de gastos se globalizó en el Header.
+- Implementación del Clean UI Design System (Fase 12.5): Se erradicó el CSS duro antiguo en favor de "Tokens Semánticos" en Tailwind (`surface-bg`, `brand-600`, etc.), y se corrigieron los z-index y overflow de toda la app (Sidebars fijos, headers persistentes y modales funcionales).
+- Reinvención de la Landing Page B2B: El Home.jsx se transformó en una página estilo SaaS moderna, orientada visualmente a convencer a bodegueros y minoristas.
+- Unificación Arquitectónica de Tienda: Se eliminaron 3 componentes obsoletos (`OrderSection.jsx`, `VentaDetalForm.jsx`, `VentaAlDetalPage.jsx`), clonando la potente UI del POS en un nuevo y seguro `CustomerStorefront.jsx` para los clientes.
+- Inteligencia de Negocio y Proyecciones (Fase 13 completada): El Dashboard Financiero ahora automatiza la subdivisión de Ganancia Neta Libre.
+- Manufactura Predictiva: El Control de Producción proyecta "Valor en Horno" y "Margen Estimado", calculando "Merma vs Excedente".
 
 ## Fase 1 (Inteligencia Financiera)
 - [x] Implementada: modelo con `costoProduccion`, controlador de estadísticas, Dashboard Financiero y meta dinámica persistida en `Setting`.
