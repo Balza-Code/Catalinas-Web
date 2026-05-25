@@ -1,274 +1,145 @@
 import { useMemo } from "react";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-import { OrderList } from "./OrderList";
-import ResumenVentasRecientes from "./ResumenVentasRecientes";
 
-// Este component e recibe la lisra completa de pedidos como props
-const Dashboard = ({ orders }) => {
-  // Usamos useMemo para que los cáculos solo se rehagan si la lista de 'orders' cambia
-  // Es una optimizacion para que la app sea más rapida
-
+// Action Center dashboard: tarjetas de urgencia + próximas acciones
+const Dashboard = ({ orders = [] }) => {
   const stats = useMemo(() => {
-    // Considerar estados que generan ingresos: 'Entregado' y 'Pago Completado'
     const revenueStatuses = ["Entregado", "Pago Completado"];
-    const deliveredOrders = orders.filter((order) =>
-      revenueStatuses.includes(order.estado),
-    );
+    const deliveredOrders = orders.filter((order) => revenueStatuses.includes(order.estado));
 
-    // Ingresos totales
-    // Ingresos totales reales (Dinero en caja/banco)
     const totalRevenue = orders.reduce((sum, order) => {
       if (order.estado === "Pago Completado") {
-        // Si ya está completado, asumimos que entró todo el dinero
         return sum + (Number(order.total) || 0);
       } else if (order.estado !== "Cancelado") {
-        // Si está en otro estado (Pendiente, Entregado, etc.), 
-        // solo sumamos lo que el cliente haya dado de abono parcial.
-        return sum + (Number(order.pagado) || 0); 
+        return sum + (Number(order.pagado) || 0);
       }
       return sum;
     }, 0);
 
-    // Número total de ventas
     const totalSales = deliveredOrders.length;
+    const onlineSales = deliveredOrders.filter((o) => o.tipoVenta === "Pedido Online").length;
+    const detalSales = deliveredOrders.filter((o) => o.tipoVenta === "Venta Detal").length;
 
-    // Ventas por tipo
-    const onlineSales = deliveredOrders.filter(
-      (o) => o.tipoVenta === "Pedido Online",
-    ).length;
-    const detalSales = deliveredOrders.filter(
-      (o) => o.tipoVenta === "Venta Detal",
-    ).length;
-
-    // Total de cuentas por cobrar (dinero en la calle)
     const totalCuentasPorCobrar = orders.reduce((sum, order) => {
-      // Ignoramos los cancelados y los que ya están pagados por completo
-      if (order.estado === "Cancelado" || order.estado === "Pago Completado")
-        return sum;
-
-      // La deuda es el total menos lo que ya hayan abonado
+      if (order.estado === "Cancelado" || order.estado === "Pago Completado") return sum;
       const deudaDelPedido = Number(order.total) - Number(order.pagado || 0);
       return sum + deudaDelPedido;
     }, 0);
 
-    return {
-      totalRevenue,
-      totalSales,
-      onlineSales,
-      detalSales,
-      totalCuentasPorCobrar,
+    return { totalRevenue, totalSales, onlineSales, detalSales, totalCuentasPorCobrar };
+  }, [orders]);
+
+  const todays = useMemo(() => {
+    const now = new Date();
+    const isSameDay = (d) => {
+      if (!d) return false;
+      const x = new Date(d);
+      return x.getFullYear() === now.getFullYear() && x.getMonth() === now.getMonth() && x.getDate() === now.getDate();
     };
-  }, [orders]); // El cálculo se vuelve a ejecutar solo si 'orders' cambia
 
-  // Generar datos para el gráfico a partir de los pedidos
-  const chartData = useMemo(() => {
-    if (!orders || orders.length === 0) return [];
+    const deliveriesToday = orders.filter(
+      (o) => isSameDay(o.fechaEntrega || o.deliveryDate || o.createdAt) || (o.estado === "Procesando" && !o.fechaEntrega)
+    ).length;
 
-    // Map key: yyyy-mm (for sorting), value: { ventasGeneradas, dineroRecibido, date }
-    const map = new Map();
+    const productionInProgress = orders.filter(
+      (o) => (o.tipoVenta || "").toLowerCase().includes("produ") && o.estado === "Procesando"
+    ).length;
 
-    orders.forEach((o) => {
-      const dateRaw = o.createdAt || o.fecha || o.date;
-      let d = null;
-      if (dateRaw) {
-        const parsed = new Date(dateRaw);
-        if (!isNaN(parsed)) d = parsed;
-      }
-      // Fallback to current date if none
-      if (!d) d = new Date();
+    return { deliveriesToday, productionInProgress };
+  }, [orders]);
 
-      const year = d.getFullYear();
-      const month = d.getMonth() + 1; // 1-12
-      const key = `${year}-${String(month).padStart(2, "0")}`;
-      const label = d.toLocaleString("default", {
-        month: "short",
-        year: "numeric",
-      });
-
-      const prev = map.get(key) || {
-        ventasGeneradas: 0,
-        dineroRecibido: 0,
-        label,
-        date: new Date(year, month - 1, 1),
-      };
-
-      // Si el estado es "Pago Completado" o "Entregado", asumimos que entró la plata
-      if (o.estado === "Cancelado") return;
-
-      // Las ventas generadas son el total del pedido (lo que se facturó)
-      prev.ventasGeneradas += Number(o.total) || 0;
-      
-      // El dinero recibido usa la misma lógica estricta que tus Ingresos Totales
-      if (o.estado === "Pago Completado") {
-        prev.dineroRecibido += Number(o.total) || 0;
-      } else {
-        prev.dineroRecibido += Number(o.pagado || 0);
-      }
-      
-      map.set(key, prev);
-    });
-
-    // Convert map to sorted array by month
-    const arr = Array.from(map.entries())
-      .map(([key, { ventasGeneradas, dineroRecibido, label, date }]) => ({
-        key,
-        name: label,
-        ventasGeneradas,
-        dineroRecibido,
-        date,
+  const urgentOrders = useMemo(() => {
+    return orders
+      .filter((o) => o.estado !== "Cancelado")
+      .map((o) => ({
+        ...o,
+        deuda: Math.max(0, Number(o.total || 0) - Number(o.pagado || 0)),
+        date: new Date(o.createdAt || o.fecha || Date.now()),
       }))
-      .sort((a, b) => a.date - b.date)
-      .map(({ name, ventasGeneradas, dineroRecibido }) => ({
-        name,
-        ventasGeneradas,
-        dineroRecibido,
-      }));
+      .sort((a, b) => {
+        // 1. Prioridad a marcados explícitamente como urgentes
+        if (a.urgente && !b.urgente) return -1;
+        if (!a.urgente && b.urgente) return 1;
+        
+        // 2. Prioridad a estados que requieren atención (Pendiente y Procesando)
+        const aNeedsAttention = a.estado === "Pendiente" || a.estado === "Procesando";
+        const bNeedsAttention = b.estado === "Pendiente" || b.estado === "Procesando";
+        if (aNeedsAttention && !bNeedsAttention) return -1;
+        if (!aNeedsAttention && bNeedsAttention) return 1;
 
-    if (arr.length === 0) {
-      return [
-        { name: "Ene", ventasGeneradas: 0, dineroRecibido: 0 },
-        { name: "Feb", ventasGeneradas: 0, dineroRecibido: 0 },
-        { name: "Mar", ventasGeneradas: 0, dineroRecibido: 0 },
-      ];
-    }
+        // 3. Prioridad de cobro (quien debe más dinero)
+        if (b.deuda !== a.deuda) return b.deuda - a.deuda;
 
-    return arr;
+        // 4. Si todo es igual, mostrar siempre los MÁS RECIENTES primero
+        return b.date - a.date;
+      })
+      .slice(0, 6);
   }, [orders]);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full bg-[#f5f0e6] ">
-      {/* Tarjetas de estadísticas */}
-      <div
-        className="
-    flex                
-    overflow-x-auto     
-    gap-4               
-    -mt-16              
-    -mx-4 px-4          
-    no-scrollbar        
-    
-    
-    
-    md:grid 
-    md:grid-cols-2      
-    lg:grid-cols-5      
-    md:overflow-visible 
-    md:mx-0 md:px-0     
-    md:pb-0
-    md:mt-0             "
-      >
-        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
-            Total de Cuentas por Cobrar
-          </h3>
-          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
-            ${stats.totalCuentasPorCobrar.toFixed(2)}
-          </p>
-        </div>
-        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-4 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
-            Ingresos Totales
-          </h3>
-          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
-            ${stats.totalRevenue.toFixed(2)}
-          </p>
-        </div>
-        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
-            Ventas Totales
-          </h3>
-          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
-            {stats.totalSales}
-          </p>
-        </div>
-        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
-            Pedidos Online Totales
-          </h3>
-          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
-            {stats.onlineSales}
-          </p>
-        </div>
-        <div className="flex flex-col justify-center bg-white rounded-lg shadow p-6 md:p-4 gap-3 min-h-[115px] md:min-h-0 shrink-0 min-w-[215px] md:min-w-0 ">
-          <h3 className="font-dm-sans text-xl/tight text-pretty font-medium md:text-sm text-gray-400">
-            Pedidos al detal
-          </h3>
-          <p className="font-dm-sans text-[28px]/tight text-pretty font-semibold md:text-lg text-gray-700">
-            {stats.detalSales}
-          </p>
-        </div>
-      </div>
-
-      {/* Contenedor de gráfico y resumen */}
-      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-4 w-full">
-        {/* Gráfico */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-xl md:text-base font-dm-sans font-medium text-left text-gray-600 mb-4 lg:text-left">
-            Rendimiento Mensual: Ventas vs Pagos
-          </h3>
-          <div className="w-full h-72 md:h-[90%] pr-0 md:pr-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient
-                    id="ventasGeneradas"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#c084fc" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#c084fc" stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient
-                    id="dineroRecibido"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="ventasGeneradas"
-                  stroke="#c084fc"
-                  fillOpacity={1}
-                  fill="url(#ventasGeneradas)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="dineroRecibido"
-                  stroke="#10b981"
-                  fillOpacity={1}
-                  fill="url(#dineroRecibido)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+    <div className="flex flex-col gap-4 w-full h-full bg-surface-bg">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className={`bg-surface-card rounded-card border border-surface-border shadow-sm p-4 flex flex-col justify-between`}>
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Pedidos para entregar</p>
+          <div className="flex items-end justify-between mt-2">
+            <div>
+              <div className={`text-4xl font-black ${todays.deliveriesToday > 0 ? "text-brand-600" : "text-slate-800"}`}>{todays.deliveriesToday}</div>
+              <p className="text-xs font-medium text-slate-500">Hoy</p>
+            </div>
+            <div className="text-right text-xs font-semibold text-brand-500 bg-brand-50 px-2 py-1 rounded-full">Acción: Preparar rutas</div>
           </div>
         </div>
 
-        {/* Resumen de ventas recientes */}
-        <div className="bg-white rounded-lg shadow p-4 max-h-[450px] md:max-w-[95.5%] overflow-y-auto no-scrollbar">
-          <h3 className="text-xl md:text-base font-dm-sans font-medium text-left text-gray-600 mb-2 ">
-            Últimos Movimientos
-          </h3>
-          <ResumenVentasRecientes orders={orders} />
+        <div className="bg-surface-card rounded-card border border-surface-border shadow-sm p-4 flex flex-col justify-between">
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Cobros Pendientes</p>
+          <div className="flex items-end justify-between mt-2">
+            <div>
+              <div className="text-3xl font-black text-status-danger">${stats.totalCuentasPorCobrar.toFixed(2)}</div>
+              <p className="text-xs font-medium text-slate-500">USD Pendientes</p>
+            </div>
+            <div className="text-right text-xs font-semibold text-status-danger bg-status-danger/10 px-2 py-1 rounded-full">Acción: Contactar clientes</div>
+          </div>
         </div>
+
+        <div className="bg-surface-card rounded-card border border-surface-border shadow-sm p-4 flex flex-col justify-between">
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Producción</p>
+          <div className="flex items-end justify-between mt-2">
+            <div>
+              <div className="text-4xl font-black text-brand-500">{todays.productionInProgress}</div>
+              <p className="text-xs font-medium text-slate-500">Tandas en proceso</p>
+            </div>
+            <div className="text-right text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-1 rounded-full">Acción: Supervisar avance</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-surface-card rounded-card border border-surface-border shadow-sm p-5">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-surface-border">
+          <h3 className="text-lg font-bold text-slate-800">Próximas Acciones</h3>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 bg-surface-bg px-3 py-1 rounded-button">Pedidos Urgentes</span>
+        </div>
+        <ul className="space-y-3">
+          {urgentOrders.length === 0 ? (
+            <li className="text-sm text-center py-6 text-slate-500 font-medium">No hay acciones urgentes pendientes. ¡Todo al día! 🎉</li>
+          ) : (
+            urgentOrders.map((o) => (
+              <li key={o._id || o.id} className="flex items-center justify-between gap-3 p-4 bg-surface-bg rounded-card border border-surface-border hover:shadow-sm transition">
+                <div className="min-w-0">
+                  <div className="font-bold text-base text-slate-800 truncate">{o.clienteNombre || o.cliente || 'Cliente sin nombre'}</div>
+                  <div className="text-xs font-medium text-slate-500 mt-1 truncate">
+                    <span className="bg-surface-card border border-surface-border px-1.5 py-0.5 rounded mr-2 font-mono">#{String(o._id || o.id).slice(-6)}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${o.estado === 'Procesando' ? 'bg-brand-50 text-brand-700' : 'bg-slate-200 text-slate-700'}`}>
+                      {o.estado}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col justify-center">
+                  <div className="text-sm font-black text-slate-800">${(Number(o.total) || 0).toFixed(2)}</div>
+                  {o.deuda > 0 && <div className="text-xs font-bold text-status-danger bg-status-danger/10 px-2 py-0.5 rounded-full mt-1 inline-block text-right">Deuda: ${o.deuda.toFixed(2)}</div>}
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
       </div>
     </div>
   );

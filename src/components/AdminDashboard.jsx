@@ -9,7 +9,6 @@ import { updateOrder, deleteOrder } from "../services/orderService";
 import Dashboard from "./Dashboard";
 import ClientDirectory from '../pages/ClientDirectory';
 import { OrderList } from './OrderList';
-import ExpenseForm from './ExpenseForm';
 // (Aqui tambien importarías los servicios para catalinas si vas a editarlas desde aqui)
 
 // Importa los componentes visuales
@@ -44,7 +43,7 @@ function AdminDashboard() {
 
       <Dashboard orders={orders} />
 
-      <ExpenseForm/>
+      {/* ExpenseForm ahora se abre desde el botón global en el header */}
 
       {/* <div className="admin-section">
         <h2>Historial de Pedidos y Ventas</h2>

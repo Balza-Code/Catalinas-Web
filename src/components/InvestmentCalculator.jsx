@@ -255,7 +255,7 @@ export default function InvestmentCalculator() {
   }
 
   return (
-    <section className="space-y-6 sm:space-y-8 p-4 sm:p-6 bg-slate-50 rounded-3xl shadow-sm border border-slate-200">
+    <section className="space-y-6 sm:space-y-8 p-4 sm:p-6 bg-surface-bg rounded-card shadow-sm">
       {/* Header & Selector */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="w-full lg:max-w-md">
@@ -264,7 +264,7 @@ export default function InvestmentCalculator() {
              <select 
                value={activeRecipe?._id || "new"}
                onChange={handleRecipeSelection}
-               className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2 mt-2 text-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400 outline-none transition"
+               className="w-full bg-surface-card border border-surface-border rounded-button px-4 py-2 mt-2 text-lg focus:ring-2 focus:ring-brand-100 focus:border-brand-500 outline-none transition"
              >
                {recipes.map(r => (
                  <option key={r._id} value={r._id}>{r.nombre}</option>
@@ -277,7 +277,7 @@ export default function InvestmentCalculator() {
           type="button"
           onClick={saveRecipeData}
           disabled={isSaving}
-          className="w-full lg:w-auto flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full lg:w-auto flex items-center justify-center gap-2 rounded-button bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FiSave size={18} />
           {isSaving ? "Guardando..." : "Guardar Receta & Costos"}
@@ -285,7 +285,7 @@ export default function InvestmentCalculator() {
       </div>
 
       {statusMessage && (
-        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl text-sm">
+        <div className="flex items-center gap-2 bg-brand-50 border border-surface-border text-brand-900 px-4 py-3 rounded-button text-sm">
           <FiAlertCircle size={18} />
           <span>{statusMessage}</span>
         </div>
@@ -295,14 +295,14 @@ export default function InvestmentCalculator() {
       {activeRecipe && (
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-3xl bg-white p-4 sm:p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div className="rounded-card bg-surface-card p-4 sm:p-5 shadow-sm flex flex-col justify-between">
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-400">Total Tanda</p>
               <p className="mt-2 sm:mt-4 text-xl sm:text-3xl font-semibold text-slate-900 break-words">{formatCurrency(calculos.totalTanda)}</p>
               <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-500">
                 {activeRecipe.usaMelado ? `(Hechura: Masa + Melado proporc.)` : "Masa (Todos los ingredientes)"}
               </p>
             </div>
-            <div className="rounded-3xl bg-white p-4 sm:p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div className="rounded-card bg-surface-card p-4 sm:p-5 shadow-sm flex flex-col justify-between">
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-400">Por {activeRecipe.unidadesPorPaquete > 1 ? "Empaque" : "Unidad (C)"}</p>
               <div className="mt-2 sm:mt-4">
                  <p className="text-xl sm:text-3xl font-semibold text-slate-900 break-words">{formatCurrency(calculos.costoUnidad)}</p>
@@ -311,7 +311,7 @@ export default function InvestmentCalculator() {
                  )}
               </div>
             </div>
-            <div className="rounded-3xl bg-slate-900 p-4 sm:p-5 shadow-sm border border-slate-800 flex flex-col justify-between">
+            <div className="rounded-card bg-slate-900 p-4 sm:p-5 shadow-sm flex flex-col justify-between">
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-400">Costo vs Venta</p>
               <div className="mt-2 sm:mt-3 flex flex-col">
                 <p className="text-xs sm:text-sm font-medium text-slate-400">
@@ -322,16 +322,16 @@ export default function InvestmentCalculator() {
                 </p>
               </div>
               <p className="mt-2 sm:mt-3 border-t border-slate-800 pt-2 text-xs sm:text-sm text-slate-400">
-                Limpio: <span className="text-green-400 font-semibold">{formatCurrency(gananciaNetaBruta)}</span>
+                Limpio: <span className="text-status-success font-semibold">{formatCurrency(gananciaNetaBruta)}</span>
               </p>
             </div>
-            <div className="rounded-3xl bg-amber-500 p-4 sm:p-5 shadow-sm border border-amber-600 flex flex-col justify-between">
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-100">Margen / Marcaje</p>
+            <div className="rounded-card bg-brand-500 p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-brand-100">Margen / Marcaje</p>
               <div className="mt-2 sm:mt-4">
                  <p className="text-xl sm:text-3xl font-semibold text-white break-words">
                    {marcajeSobreCosto.toFixed(2)}% <span className="text-sm font-normal opacity-80">(Marcaje)</span>
                  </p>
-                 <p className="text-sm font-medium text-amber-100 mt-1">
+                 <p className="text-sm font-medium text-brand-100 mt-1">
                    {margenReal.toFixed(2)}% <span className="font-normal opacity-80">(Margen de Venta)</span>
                  </p>
               </div>
@@ -341,7 +341,7 @@ export default function InvestmentCalculator() {
           <div className="grid gap-6 xl:grid-cols-[1fr_2fr]">
             {/* Formulario Principal de Receta */}
             <div className="space-y-6">
-               <div className="rounded-3xl bg-white p-5 sm:p-6 shadow-sm border border-slate-200">
+               <div className="rounded-card bg-surface-card p-5 sm:p-6 shadow-sm">
                   <h2 className="text-lg font-semibold text-slate-900 mb-4">Configuración Básica</h2>
                   <div className="space-y-4">
                     <label className="block">
@@ -350,7 +350,7 @@ export default function InvestmentCalculator() {
                         type="text" 
                         value={activeRecipe.nombre} 
                         onChange={(e) => handleGeneralChange('nombre', e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                        className="mt-1 w-full rounded-button border border-surface-border bg-surface-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                       />
                     </label>
                     <label className="block">
@@ -360,7 +360,7 @@ export default function InvestmentCalculator() {
                            <select 
                              value={activeRecipe.tipoProductoAsociado || "Paquete"}
                              onChange={(e) => handleGeneralChange('tipoProductoAsociado', e.target.value)}
-                             className="text-[10px] bg-slate-100 uppercase tracking-widest px-2 py-0.5 rounded text-amber-700 border border-slate-200 outline-none"
+                             className="text-[10px] bg-surface-bg uppercase tracking-widest px-2 py-0.5 rounded-button text-brand-600 border border-surface-border outline-none"
                            >
                              <option value="Paquete">Se vende al mayor</option>
                              <option value="Unidad">Se vende detallado</option>
@@ -370,7 +370,7 @@ export default function InvestmentCalculator() {
                       <select 
                         value={activeRecipe.productoAsociado || ""}
                         onChange={(e) => handleGeneralChange('productoAsociado', e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                        className="mt-1 w-full rounded-button border border-surface-border bg-surface-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                       >
                         <option value="">Ninguno</option>
                         {catalinas.map(c => (
@@ -386,7 +386,7 @@ export default function InvestmentCalculator() {
                           type="number" 
                           value={activeRecipe.rendimientoEstimado} 
                           onChange={(e) => handleGeneralChange('rendimientoEstimado', e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                          className="mt-1 w-full rounded-button border border-surface-border bg-surface-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                         />
                       </label>
                       <label className="block">
@@ -396,19 +396,19 @@ export default function InvestmentCalculator() {
                           min="1"
                           value={activeRecipe.unidadesPorPaquete || 1} 
                           onChange={(e) => handleGeneralChange('unidadesPorPaquete', e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                          className="mt-1 w-full rounded-button border border-surface-border bg-surface-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                         />
                       </label>
                     </div>
                   </div>
                </div>
 
-               <div className="rounded-3xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="p-4 bg-amber-50/50 border-b border-slate-200 flex items-center justify-between">
+               <div className="rounded-card bg-surface-card shadow-sm overflow-hidden border border-surface-border">
+                  <div className="p-4 bg-brand-50/50 border-b border-surface-border flex items-center justify-between">
                      <span className="font-semibold text-slate-800 text-sm">Separar Fases: Usa Melado Madre</span>
                      <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked={activeRecipe.usaMelado} onChange={(e) => handleGeneralChange('usaMelado', e.target.checked)} className="sr-only peer"/>
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
                      </label>
                   </div>
                   {activeRecipe.usaMelado && (
@@ -420,7 +420,7 @@ export default function InvestmentCalculator() {
                           <input 
                             type="number" step="0.01"
                             value={activeRecipe.rendimientoMelado} onChange={(e) => handleGeneralChange('rendimientoMelado', e.target.value)}
-                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                            className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                           />
                         </label>
                         <label className="block">
@@ -428,11 +428,11 @@ export default function InvestmentCalculator() {
                           <input 
                             type="number" step="0.01"
                             value={activeRecipe.meladoUsadoPorTanda} onChange={(e) => handleGeneralChange('meladoUsadoPorTanda', e.target.value)}
-                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                            className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
                           />
                         </label>
                       </div>
-                      <div className="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg font-medium">
+                      <div className="text-xs text-brand-900 bg-brand-50 p-2 rounded-button font-medium border border-surface-border">
                          El melado rinde {activeRecipe.rendimientoMelado}. Por cada lit/unid sale en {formatCurrency((calculos.totalMelado / (activeRecipe.rendimientoMelado || 1)))}. Como usas {activeRecipe.meladoUsadoPorTanda}, se suman <strong className="text-slate-900">{formatCurrency(calculos.costoMeladoUsado)}</strong> (redondeado) a la Masa para la Totalización.
                       </div>
                     </div>
@@ -441,14 +441,14 @@ export default function InvestmentCalculator() {
             </div>
 
             {/* Listado de Ingredientes */}
-            <div className="rounded-3xl bg-white p-5 sm:p-6 shadow-sm border border-slate-200 flex flex-col h-full">
+            <div className="rounded-card bg-surface-card p-5 sm:p-6 shadow-sm flex flex-col h-full">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">Ingredientes 
-                   <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md">{activeRecipe.ingredientes.length} items</span>
+                   <span className="bg-surface-bg text-slate-600 text-xs px-2 py-1 rounded-button border border-surface-border">{activeRecipe.ingredientes.length} items</span>
                 </h2>
                 <button 
                   onClick={handleAddIngredient}
-                  className="p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition"
+                  className="p-2 rounded-full bg-surface-bg text-slate-700 hover:bg-surface-border hover:text-slate-900 transition border border-surface-border"
                   title="Añadir ingrediente"
                 >
                   <FiPlus size={20} />
@@ -460,9 +460,9 @@ export default function InvestmentCalculator() {
               ) : (
                 <div className="space-y-3 flex-1 overflow-y-auto pr-1">
                   {activeRecipe.ingredientes.map((ing, idx) => (
-                    <div key={idx} className={`relative flex flex-col sm:flex-row gap-3 rounded-2xl p-4 border transition ${activeRecipe.usaMelado && ing.categoria === 'Melado' ? 'bg-amber-50/30 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                    <div key={idx} className={`relative flex flex-col sm:flex-row gap-3 rounded-card p-4 border transition ${activeRecipe.usaMelado && ing.categoria === 'Melado' ? 'bg-brand-50/30 border-brand-100' : 'bg-surface-bg border-surface-border'}`}>
                       <div className="flex-1 space-y-3">
-                         <div className="flex justify-between items-center gap-2 border-b border-slate-200 pb-2">
+                         <div className="flex justify-between items-center gap-2 border-b border-surface-border pb-2">
                            <input 
                              type="text" 
                              value={ing.nombre} 
@@ -474,7 +474,7 @@ export default function InvestmentCalculator() {
                              <select 
                                value={ing.categoria || "Masa"} 
                                onChange={(e) => handleIngredientChange(idx, 'categoria', e.target.value)}
-                               className="text-xs bg-white border border-slate-300 rounded px-2 py-1 outline-none font-medium text-slate-600 focus:border-amber-400"
+                               className="text-xs bg-surface-card border border-surface-border rounded-button px-2 py-1 outline-none font-medium text-slate-600 focus:border-brand-500"
                              >
                                <option value="Masa">M/Masa</option>
                                <option value="Melado">B/Melado</option>
@@ -486,15 +486,15 @@ export default function InvestmentCalculator() {
                          <div className="grid grid-cols-[1fr_80px_1fr] sm:grid-cols-[1fr_80px_1fr_auto] items-end gap-2">
                             <label className="block">
                                <span className="text-[10px] uppercase text-slate-500 mb-1 block">KGs / Uds</span>
-                               <input type="number" min="0" step="0.01" value={ing.cantidad} onChange={(e) => handleIngredientChange(idx, 'cantidad', e.target.value)} className="w-full text-sm rounded-lg border border-slate-300 px-3 py-1.5 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200"/>
+                               <input type="number" min="0" step="0.01" value={ing.cantidad} onChange={(e) => handleIngredientChange(idx, 'cantidad', e.target.value)} className="w-full text-sm rounded-button border border-surface-border px-3 py-1.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-100 bg-surface-card"/>
                             </label>
                             <label className="block">
                                <span className="text-[10px] uppercase text-slate-500 mb-1 block">Tipo</span>
-                               <input type="text" value={ing.unidad} onChange={(e) => handleIngredientChange(idx, 'unidad', e.target.value)} className="w-full text-sm rounded-lg border border-slate-300 px-3 py-1.5 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200 text-center"/>
+                               <input type="text" value={ing.unidad} onChange={(e) => handleIngredientChange(idx, 'unidad', e.target.value)} className="w-full text-sm rounded-button border border-surface-border px-3 py-1.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-100 text-center bg-surface-card"/>
                             </label>
                             <label className="block">
                                <span className="text-[10px] uppercase text-slate-500 mb-1 block">Precio x U.</span>
-                               <input type="number" min="0" step="0.01" value={ing.costoUnitario} onChange={(e) => handleIngredientChange(idx, 'costoUnitario', e.target.value)} className="w-full text-sm rounded-lg border border-slate-300 px-3 py-1.5 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200"/>
+                               <input type="number" min="0" step="0.01" value={ing.costoUnitario} onChange={(e) => handleIngredientChange(idx, 'costoUnitario', e.target.value)} className="w-full text-sm rounded-button border border-surface-border px-3 py-1.5 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-100 bg-surface-card"/>
                             </label>
                             <div className="hidden sm:block pb-1.5 min-w-[70px] text-right">
                                <span className="text-xs font-semibold text-slate-700">{formatCurrency((Number(ing.cantidad) || 0) * (Number(ing.costoUnitario) || 0))}</span>
@@ -505,7 +505,7 @@ export default function InvestmentCalculator() {
                       <div className="absolute top-3 right-3 sm:relative sm:top-0 sm:right-0 flex items-start">
                         <button 
                           onClick={() => handleRemoveIngredient(idx)}
-                          className="text-slate-400 hover:text-red-500 hover:bg-slate-200 p-2 rounded-lg transition"
+                          className="text-slate-400 hover:text-status-danger hover:bg-surface-border p-2 rounded-button transition"
                         >
                           <FiTrash2 size={16} />
                         </button>

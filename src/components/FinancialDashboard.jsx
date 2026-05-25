@@ -12,6 +12,8 @@ const formatCurrency = (value) => {
   });
 };
 
+const META_BATIDORA = 150; // USD (Ajustable)
+
 export default function FinancialDashboard() {
   const [periodo, setPeriodo] = useState('semana');
   const token = localStorage.getItem('token');
@@ -92,43 +94,50 @@ export default function FinancialDashboard() {
     return Math.min(100, Math.round((stats.capitalReinversion / stats.metaSemanal) * 100));
   }, [stats.capitalReinversion, stats.metaSemanal]);
 
-  const progressColor = progressValue >= 100 ? 'bg-emerald-500' : 'bg-amber-500';
-  const gainColor = stats.gananciaNeta >= 0 ? 'text-emerald-600' : 'text-rose-500';
+  const gainValue = Number(stats.gananciaNeta) || 0;
+  const netGainLibre = gainValue > 0 ? gainValue : 0;
+  const fondoRetribucion = netGainLibre * 0.6;
+  const fondoCrecimiento = netGainLibre * 0.3;
+  const fondoEmergencia = netGainLibre * 0.1;
+  const batidoraProgress = Math.min(100, Math.round((fondoCrecimiento / META_BATIDORA) * 100));
+
+  const progressColor = progressValue >= 100 ? 'bg-status-success' : 'bg-brand-500';
+  const gainColor = gainValue >= 0 ? 'text-status-success' : 'text-status-danger';
 
   return (
-    <section className="space-y-6 p-6 bg-slate-50 rounded-3xl shadow-sm border border-slate-200">
+    <section className="space-y-6 p-6 bg-surface-bg rounded-card shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Inteligencia Financiera</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">Resumen financiero</h2>
         </div>
-        <div className="flex overflow-x-auto no-scrollbar rounded-full bg-white border border-slate-200 p-1 shadow-sm w-full sm:w-auto">
+        <div className="flex overflow-x-auto no-scrollbar rounded-button bg-surface-card border border-surface-border p-1 shadow-sm w-full sm:w-auto">
           <div className="flex min-w-max">
             <button
               type="button"
               onClick={() => setPeriodo('semana')}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'semana' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`rounded-button px-4 py-2 text-sm font-semibold transition ${periodo === 'semana' ? 'bg-brand-500 text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               Esta Semana
             </button>
             <button
               type="button"
               onClick={() => setPeriodo('mes')}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === 'mes' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`rounded-button px-4 py-2 text-sm font-semibold transition ${periodo === 'mes' ? 'bg-brand-500 text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               Este Mes
             </button>
             <button
               type="button"
               onClick={() => setPeriodo('30dias')}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === '30dias' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`rounded-button px-4 py-2 text-sm font-semibold transition ${periodo === '30dias' ? 'bg-brand-500 text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               30 Días
             </button>
             <button
               type="button"
               onClick={() => setPeriodo('90dias')}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${periodo === '90dias' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`rounded-button px-4 py-2 text-sm font-semibold transition ${periodo === '90dias' ? 'bg-brand-500 text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               90 Días
             </button>
@@ -136,7 +145,7 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
-      <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
+      <div className="rounded-card bg-surface-card p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
@@ -148,7 +157,7 @@ export default function FinancialDashboard() {
                   setMetaError(null);
                   setIsEditingMeta(true);
                 }}
-                className="text-sm font-medium text-slate-500 hover:text-slate-900"
+                className="text-sm font-medium text-brand-600 hover:text-brand-700"
               >
                 Editar
               </button>
@@ -165,13 +174,13 @@ export default function FinancialDashboard() {
                     const value = e.target.value;
                     setNewMetaValue(value === '' ? 0 : Number(value));
                   }}
-                  className="w-32 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-900 shadow-sm"
+                  className="w-32 rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-slate-900 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-100"
                 />
                 <button
                   type="button"
                   onClick={handleSaveMeta}
                   disabled={savingMeta}
-                  className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="rounded-button bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   {savingMeta ? 'Guardando...' : 'Guardar'}
                 </button>
@@ -188,7 +197,7 @@ export default function FinancialDashboard() {
             )}
 
             {metaError && (
-              <p className="mt-2 text-sm text-rose-600">{metaError}</p>
+              <p className="mt-2 text-sm text-status-danger">{metaError}</p>
             )}
           </div>
           <div className="text-right">
@@ -198,7 +207,7 @@ export default function FinancialDashboard() {
         </div>
 
         <div className="mt-6 space-y-3 -mx-6 px-6 sm:mx-0 sm:px-0">
-          <div className="overflow-hidden rounded-3xl bg-slate-100 h-4">
+          <div className="overflow-hidden rounded-button bg-surface-bg h-4">
             <div className={`h-4 ${progressColor}`} style={{ width: `${progressValue}%` }} />
           </div>
           <div className="flex items-center justify-between text-sm text-slate-500 font-medium">
@@ -212,7 +221,7 @@ export default function FinancialDashboard() {
         <h3 className="text-xl font-bold text-slate-800 mb-4">Disponibilidad en Caja (Conciliación)</h3>
         <div className="grid gap-4 md:grid-cols-3">
           {/* Físico USD */}
-          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+          <div className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm ${loading ? 'animate-pulse' : ''}`}>
             <div className="flex justify-between items-start">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-400">💵 Físico USD</p>
             </div>
@@ -220,7 +229,7 @@ export default function FinancialDashboard() {
           </div>
 
           {/* Físico Bs */}
-          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+          <div className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm ${loading ? 'animate-pulse' : ''}`}>
             <div className="flex justify-between items-start">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-400">💸 Físico Bs</p>
             </div>
@@ -228,7 +237,7 @@ export default function FinancialDashboard() {
           </div>
 
           {/* Digital / Banco */}
-          <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+          <div className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm ${loading ? 'animate-pulse' : ''}`}>
             <div className="flex justify-between items-start">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-400">📱 Digital / Banco</p>
             </div>
@@ -243,11 +252,11 @@ export default function FinancialDashboard() {
           onClick={handleOpenSalesDetails}
           role="button"
           tabIndex={0}
-          className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition ${loading ? 'animate-pulse' : 'hover:bg-slate-50 cursor-pointer'}`}
+          className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm transition ${loading ? 'animate-pulse' : 'hover:bg-surface-bg cursor-pointer'}`}
         >
           <div className="flex justify-between items-start">
             <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ventas Totales</p>
-            <div className="p-2 bg-blue-50 rounded-2xl text-blue-600">
+            <div className="p-2 bg-brand-50 rounded-button text-brand-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
             </div>
           </div>
@@ -256,10 +265,10 @@ export default function FinancialDashboard() {
         </div>
 
         {/* Capital a Reinvertir */}
-        <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+        <div className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm ${loading ? 'animate-pulse' : ''}`}>
            <div className="flex justify-between items-start">
             <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Capital a Reinvertir</p>
-            <div className="p-2 bg-amber-50 rounded-2xl text-amber-600">
+            <div className="p-2 bg-brand-50 rounded-button text-brand-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
           </div>
@@ -268,10 +277,10 @@ export default function FinancialDashboard() {
         </div>
         
         {/* Ganancia Neta */}
-        <div className={`relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 ${loading ? 'animate-pulse' : ''}`}>
+        <div className={`relative overflow-hidden rounded-card bg-surface-card p-6 shadow-sm ${loading ? 'animate-pulse' : ''}`}>
           <div className="flex justify-between items-start">
             <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Ganancia Neta Libre</p>
-            <div className="p-2 bg-emerald-50 rounded-2xl text-emerald-600">
+            <div className="p-2 bg-status-success/20 rounded-button text-status-success">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             </div>
           </div>
@@ -280,8 +289,36 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="rounded-card bg-surface-card p-4 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Retribución</p>
+          <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(fondoRetribucion)}</p>
+          <p className="mt-2 text-sm text-slate-500">Para nómina y dueños</p>
+        </div>
+
+        <div className="rounded-card bg-surface-card p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Crecimiento</p>
+            <span className="text-xs font-semibold uppercase text-brand-600">30%</span>
+          </div>
+          <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(fondoCrecimiento)}</p>
+          <div className="mt-4 space-y-3">
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-bg border border-surface-border">
+              <div className="h-2.5 rounded-full bg-brand-500" style={{ width: `${batidoraProgress}%` }} />
+            </div>
+            <p className="text-xs text-slate-500">Meta Batidora: {formatCurrency(fondoCrecimiento)} / {formatCurrency(META_BATIDORA)}</p>
+          </div>
+        </div>
+
+        <div className="rounded-card bg-surface-card p-4 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Emergencias</p>
+          <p className="mt-4 text-3xl font-semibold text-slate-900">{formatCurrency(fondoEmergencia)}</p>
+          <p className="mt-2 text-sm text-slate-500">Fondo de contingencia</p>
+        </div>
+      </div>
+
       {error && (
-        <div className="rounded-3xl bg-rose-50 border border-rose-100 p-4 text-sm text-rose-700">
+        <div className="rounded-card bg-status-danger/10 border border-status-danger/20 p-4 text-sm text-status-danger">
           {error}
         </div>
       )}

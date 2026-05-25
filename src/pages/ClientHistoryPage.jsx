@@ -16,9 +16,11 @@ function CustomerDashboard() {
 
   // --- NUEVA FUNCIÓN (idéntica a la del Admin) ---
   const handleReceiptUploaded = (updatedOrder) => {
-    setOrders(orders.map(order => 
-      order._id === updatedOrder._id ? updatedOrder : order
-    ));
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order._id === updatedOrder._id ? updatedOrder : order
+      )
+    );
   };
 
   const handleUpdateOrder = async (orderId, updateData) => {
@@ -53,9 +55,9 @@ function CustomerDashboard() {
   };
 
   return (
-    <div className="md:mt-0 z-20 max-h-full bg-[#f5f0e6] p-4 md:max-h-[540px]">
+    <div className="md:mt-0 z-20 max-h-full bg-surface-bg p-4 md:p-6 md:max-h-[540px] rounded-card">
       <section className="max-w-6xl mx-auto">
-        <h2 className="h6 mb-4">Mis Pedidos</h2>
+        <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-6">Historial de Pedidos</h2>
         
         <OrderList
           orders={orders}

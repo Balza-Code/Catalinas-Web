@@ -58,59 +58,59 @@ const CreateClientForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-semibold mb-1">Nombre</label>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Nombre</label>
         <input
           name="nombre"
           value={formData.nombre}
           onChange={handleChange}
           required
-          className="w-full rounded-3xl border border-slate-300 px-4 py-3"
+          className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           placeholder="Nombre completo"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-semibold mb-1">Email</label>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Email</label>
         <input
           name="email"
           value={formData.email}
           onChange={handleChange}
           type="email"
-          className="w-full rounded-3xl border border-slate-300 px-4 py-3"
+          className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           placeholder="Email opcional"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold mb-1">Teléfono</label>
+          <label className="block text-sm font-semibold mb-1 text-slate-700">Teléfono</label>
           <input
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
-            className="w-full rounded-3xl border border-slate-300 px-4 py-3"
+            className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="Teléfono"
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1">Dirección</label>
+          <label className="block text-sm font-semibold mb-1 text-slate-700">Dirección</label>
           <input
             name="direccion"
             value={formData.direccion}
             onChange={handleChange}
-            className="w-full rounded-3xl border border-slate-300 px-4 py-3"
+            className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="Dirección"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold mb-1">Notas CRM</label>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Notas CRM</label>
         <textarea
           name="notasCRM"
           value={formData.notasCRM}
           onChange={handleChange}
-          className="w-full min-h-[120px] rounded-3xl border border-slate-300 px-4 py-3"
+          className="w-full min-h-[120px] rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           placeholder="Ej. Cliente habitual, prefiere envíos en la mañana"
         />
       </div>
@@ -118,7 +118,7 @@ const CreateClientForm = ({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-3xl bg-amber-500 px-4 py-3 text-white font-semibold hover:bg-amber-600 disabled:opacity-50"
+        className="w-full rounded-button bg-brand-500 px-4 py-3 text-white font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50"
       >
         {submitting ? "Creando..." : "Crear cliente"}
       </button>
@@ -156,7 +156,7 @@ const RecentOrdersPanel = ({ userId }) => {
 
   if (loading) {
     return (
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-5 text-slate-500">
+      <div className="rounded-card border border-dashed border-surface-border bg-surface-card p-5 text-slate-500 text-center shadow-sm">
         Cargando historial de pedidos...
       </div>
     );
@@ -164,7 +164,7 @@ const RecentOrdersPanel = ({ userId }) => {
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-red-700">
+      <div className="rounded-card border border-status-danger/20 bg-status-danger/10 p-5 text-status-danger shadow-sm">
         {error}
       </div>
     );
@@ -185,13 +185,17 @@ const ClientDirectory = () => {
 
   const { showModal, hideModal } = useModal();
   const [searchTerm, setSearchTerm] = useState("");
-  const [showOnlyDebtors, setShowOnlyDebtors] = useState(false);
+  const [clienteFilter, setClienteFilter] = useState("all");
 
   const filteredClientes = clientes.filter((cliente) => {
     const matchesName = cliente.nombre
       ? cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase())
       : false;
-    const matchesDebt = showOnlyDebtors ? cliente.saldoDeudor > 0 : true;
+    const matchesDebt = clienteFilter === "all"
+      ? true
+      : clienteFilter === "debtors"
+      ? cliente.saldoDeudor > 0
+      : cliente.saldoDeudor === 0;
     return matchesName && matchesDebt;
   });
 
@@ -200,7 +204,7 @@ const ClientDirectory = () => {
       title: cliente.nombre,
       children: (
         <div className="max-h-full space-y-6">
-          <div className="rounded-3xl bg-slate-50 p-6 border border-slate-200">
+          <div className="rounded-card bg-surface-bg p-6 border border-surface-border shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-sm text-slate-500">Email</p>
@@ -208,7 +212,7 @@ const ClientDirectory = () => {
                   {cliente.email}
                 </p>
               </div>
-              <div className="rounded-3xl bg-white p-4 border border-slate-200">
+              <div className="rounded-card bg-surface-card p-4 border border-surface-border shadow-sm">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
                   Cliente ID
                 </p>
@@ -219,12 +223,12 @@ const ClientDirectory = () => {
             </div>
           </div>
 
-          <section className="rounded-3xl bg-slate-50 p-6 border border-slate-200">
+          <section className="rounded-card bg-surface-bg p-6 border border-surface-border shadow-sm">
             <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-4">
               Resumen Financiero
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl bg-white p-5 border border-slate-200">
+              <div className="rounded-card bg-surface-card p-5 border border-surface-border shadow-sm">
                 <p className="text-xs text-slate-400 uppercase mb-2">
                   Total Gastado
                 </p>
@@ -232,10 +236,10 @@ const ClientDirectory = () => {
                   ${cliente.montoTotalGastado.toFixed(2)}
                 </p>
               </div>
-              <div className="rounded-3xl bg-white p-5 border border-slate-200">
+              <div className="rounded-card bg-surface-card p-5 border border-surface-border shadow-sm">
                 <p className="text-xs text-slate-400 uppercase mb-2">Deuda</p>
                 <p
-                  className={`text-3xl font-semibold ${cliente.saldoDeudor > 0 ? "text-red-600" : "text-emerald-600"}`}
+                  className={`text-3xl font-semibold ${cliente.saldoDeudor > 0 ? "text-status-danger" : "text-status-success"}`}
                 >
                   ${cliente.saldoDeudor.toFixed(2)}
                 </p>
@@ -243,21 +247,21 @@ const ClientDirectory = () => {
             </div>
           </section>
 
-          <section className="rounded-3xl bg-slate-50 p-6 border border-slate-200">
+          <section className="rounded-card bg-surface-bg p-6 border border-surface-border shadow-sm">
             <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-4">
               Historial de Pedidos Recientes
             </h3>
             <RecentOrdersPanel userId={cliente.userId} />
           </section>
 
-          <section className="rounded-3xl bg-slate-50 p-6 border border-slate-200">
+          <section className="rounded-card bg-surface-bg p-6 border border-surface-border shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
                 Notas del Cliente
               </h3>
             </div>
             <textarea
-              className="w-full min-h-40 rounded-3xl border border-slate-200 bg-white p-4 text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full min-h-40 rounded-card border border-surface-border bg-surface-card p-4 text-sm text-slate-700 resize-none focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500"
               placeholder="Le gustan las catalinas muy tostadas"
               defaultValue={cliente.notas || ""}
             />
@@ -284,7 +288,7 @@ const ClientDirectory = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+        <div className="bg-status-danger/10 border border-status-danger/20 text-status-danger px-4 py-3 rounded-card">
           Error: {error}
         </div>
       </div>
@@ -297,30 +301,41 @@ const ClientDirectory = () => {
         <h1 className="text-2xl font-bold">Directorio de Clientes</h1>
         <button
           onClick={openCreateClientModal}
-          className="rounded-3xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="rounded-button bg-brand-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           Crear cliente físico
         </button>
       </div>
 
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md pb-4 pt-2 mb-6 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-md">
-          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">🔍</span>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nombre..."
-            className="w-full rounded-3xl border border-slate-300 bg-white px-12 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
-          />
+      <div className="relative z-10 bg-surface-bg/95 backdrop-blur-md pb-4 pt-2 mb-6 border-b border-surface-border">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-md">
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">🔍</span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nombre..."
+              className="w-full rounded-button border border-surface-border bg-surface-card px-12 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 shadow-sm"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'all', label: 'Todos' },
+              { value: 'debtors', label: 'Con Deuda 🚨' },
+              { value: 'solvent', label: 'Solventes ✅' },
+            ].map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setClienteFilter(chip.value)}
+                className={`rounded-button px-4 py-2 text-sm font-semibold transition border ${clienteFilter === chip.value ? 'bg-brand-500 text-white border-brand-500' : 'bg-surface-card border-surface-border text-slate-700 hover:bg-surface-bg'}`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowOnlyDebtors((current) => !current)}
-          className={`rounded-3xl px-4 py-3 text-sm font-semibold transition ${showOnlyDebtors ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}
-        >
-          Mostrar solo deudores
-        </button>
       </div>
 
       {loading ? (
@@ -328,7 +343,7 @@ const ClientDirectory = () => {
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl shadow-sm p-6 animate-pulse"
+              className="bg-surface-card rounded-card shadow-sm border border-surface-border p-6 animate-pulse"
             >
               <div className="h-4 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -338,7 +353,7 @@ const ClientDirectory = () => {
           ))}
         </div>
       ) : clientes.length === 0 ? (
-        <div className="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-sm">
+        <div className="rounded-card border border-brand-200 bg-surface-card p-10 text-center shadow-sm">
           <p className="text-lg font-semibold text-slate-900 mb-2">
             Aún no hay clientes visibles
           </p>
@@ -349,7 +364,7 @@ const ClientDirectory = () => {
           </p>
         </div>
       ) : filteredClientes.length === 0 ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        <div className="rounded-card border border-surface-border bg-surface-card p-10 text-center shadow-sm">
           <p className="text-lg font-semibold text-slate-900 mb-2">
             No se encontraron clientes con esos filtros
           </p>
@@ -362,12 +377,12 @@ const ClientDirectory = () => {
           {filteredClientes.map((cliente) => (
             <div
               key={cliente.userId}
-              className={`bg-white rounded-2xl shadow-sm p-6 border-2 transition ${cliente.saldoDeudor > 0 ? "border-red-200" : "border-transparent"}`}
+              className={`bg-surface-card rounded-card shadow-sm p-6 border transition ${cliente.saldoDeudor > 0 ? "border-status-danger" : "border-surface-border hover:shadow-md"}`}
             >
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-slate-800">{cliente.nombre}</h3>
                 {cliente.saldoDeudor > 0 && (
-                  <span className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-bold">
+                  <span className="flex items-center gap-1 bg-status-danger/10 text-status-danger px-2 py-1 rounded-full text-xs font-bold">
                     ⚠️ Deuda Activa
                   </span>
                 )}
@@ -385,7 +400,7 @@ const ClientDirectory = () => {
                   Dirección: {cliente.direccion}
                 </p>
               )}
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Total de Pedidos:</span>
                   <span className="text-sm">{cliente.totalPedidos}</span>
@@ -396,25 +411,41 @@ const ClientDirectory = () => {
                     ${cliente.montoTotalGastado.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-surface-border">
                   <span className="text-sm font-medium">Deuda Pendiente:</span>
                   <span
-                    className={`text-sm px-2 py-1 rounded-full ${
+                    className={`text-sm px-2 py-1 rounded-button font-bold ${
                       cliente.saldoDeudor > 0
-                        ? "text-red-600 bg-red-50"
-                        : "text-green-600 bg-green-50"
+                        ? "text-status-danger bg-status-danger/10"
+                        : "text-status-success bg-status-success/10"
                     }`}
                   >
                     ${cliente.saldoDeudor.toFixed(2)}
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => openClientProfile(cliente)}
-                className="mt-6 w-full rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600 flex items-center justify-center gap-2"
-              >
-                Ver Historial / Perfil
-              </button>
+              <div className="mt-5 pt-4 border-t border-surface-border flex flex-wrap gap-2">
+                <a
+                  href={cliente.telefono ? `https://wa.me/${cliente.telefono.replace(/\D/g, '')}` : "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.telefono ? 'bg-[#25D366] text-white hover:bg-[#128C7E]' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
+                >
+                  📱 WhatsApp
+                </a>
+                <a
+                  href={cliente.telefono ? `tel:${cliente.telefono.replace(/\D/g, '')}` : "#"}
+                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.telefono ? 'bg-sky-500 text-white hover:bg-sky-600' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
+                >
+                  📞 Llamar
+                </a>
+                <button
+                  onClick={() => openClientProfile(cliente)}
+                  className="inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold text-slate-700 bg-surface-bg border border-surface-border hover:bg-surface-border transition"
+                >
+                  Ver Perfil
+                </button>
+              </div>
             </div>
           ))}
         </div>
