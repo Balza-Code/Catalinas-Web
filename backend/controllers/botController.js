@@ -1,7 +1,7 @@
 import Catalina from '../models/catalina.js';
 import Order from '../models/order.js';
 import User from '../models/user.js';
-import { parseWhatsAppMessageToOrder } from '../services/aiOrderService.js'; // 👈 1. Importamos el servicio de IA
+import { parseWhatsAppMessageToOrder } from '../services/aiOrderService.js';
 
 const normalizePhone = (phone) => {
   if (!phone) return '';
@@ -32,21 +32,34 @@ const findCatalinaByIdOrName = async (item) => {
 
 export const handleWhatsAppOrder = async (req, res) => {
   try {
-    let {
-      phone,
-      nombreCliente,
-      items: rawItems,
-      metodoPago,
-      notas,
-      messageText, // 👈 2. Leemos el texto crudo del mensaje si existe
-    } = req.body;
+    const { event, data } = req.body;
+
+    // 1. Ignorar eventos que NO sean de mensajes para evitar falsos 400
+    if (event && event !== 'messages.upsert') {
+      return res.status(200).json({
+        success: true,
+        message: `Evento '${event}' ignorado correctamente.`,
+      });
+    }
+
+    // 2. Extraer datos si vienen desde Evolution API v1.8 o de la petición directa
+    let phone = req.body.phone || data?.key?.remoteJid || data?.sender;
+    let nombreCliente = req.body.nombreCliente || data?.pushName || 'Cliente WhatsApp';
+    let messageText =
+      req.body.messageText ||
+      data?.message?.conversation ||
+      data?.message?.extendedTextMessage?.text;
+
+    let rawItems = req.body.items;
+    let metodoPago = req.body.metodoPago;
+    let notas = req.body.notas;
 
     const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedPhone) {
       return res.status(400).json({
         success: false,
-        message: 'phone es obligatorio',
+        message: 'phone es obligatorio o no se pudo extraer del webhook',
       });
     }
 
@@ -57,11 +70,10 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 👈 3. MAGIA IA: Si la petición trae el mensaje crudo de WhatsApp, procesamos primero con Gemini
+    // 3. Procesar con Gemini si existe mensaje de texto
     if (messageText && typeof messageText === 'string') {
       const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
-      
-      // Sobrescribimos o rellenamos con lo que interpretó Gemini
+
       nombreCliente = parsedData.nombreCliente || nombreCliente;
       rawItems = parsedData.items;
       metodoPago = parsedData.metodoPago || metodoPago;
