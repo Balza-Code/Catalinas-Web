@@ -2,6 +2,7 @@ import express from 'express';
 import { 
   getAdminClientesResume, 
   createAdminCliente, 
+  updateAdminCliente,
   getFinancialStats, 
   updateMetaSemanal,
   getRecipes,
@@ -21,6 +22,7 @@ router.get('/stats', protect, adminOnly, getFinancialStats);
 router.put('/settings/meta', protect, adminOnly, updateMetaSemanal);
 // Ruta para crear clientes físicos / de CRM desde el panel admin
 router.post('/clientes', protect, adminOnly, createAdminCliente);
+router.put('/clientes/:id', protect, adminOnly, updateAdminCliente);
 
 // ================= RECETAS =================
 router.get('/recipes', protect, adminOnly, getRecipes);

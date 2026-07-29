@@ -42,7 +42,9 @@ export const getAdminClientesResume = async (req, res) => {
           userId: cliente._id,
           nombre: cliente.nombre,
           email: cliente.email || '',
-          telefono: cliente.telefono || '',
+          phone: cliente.phone || '',
+          direccion: cliente.direccion || '',
+          notasCRM: cliente.notasCRM || '',
           totalPedidos,
           montoTotalGastado,
           saldoDeudor,
@@ -67,7 +69,7 @@ export const getAdminClientesResume = async (req, res) => {
 
 export const createAdminCliente = async (req, res) => {
   try {
-    const { nombre, email, password, telefono, direccion, notasCRM } = req.body;
+    const { nombre, email, phone, nombreLocal, direccion, notasCRM } = req.body;
 
     if (!nombre) {
       return res.status(400).json({
@@ -79,32 +81,19 @@ export const createAdminCliente = async (req, res) => {
     const clienteData = {
       nombre,
       role: 'cliente',
-      telefono: telefono || '',
+      phone: phone || undefined,
       direccion: direccion || '',
       notasCRM: notasCRM || '',
+      metadataCRM: {
+        nombreLocal: nombreLocal || '',
+        direccion: direccion || '',
+        origen: 'POS',
+      },
       createdByAdmin: true,
     };
 
     if (email) {
       clienteData.email = email.toLowerCase();
-    }
-
-    if (password) {
-      clienteData.password = password;
-    }
-
-    if (!clienteData.password) {
-      const randomPart = Math.random().toString(36).slice(2, 10);
-      clienteData.password = `${randomPart}${Date.now()}`;
-    }
-
-    if (!clienteData.email) {
-      const safeNombre = nombre
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[^a-z0-9_]/g, '') || 'cliente';
-      clienteData.email = `crm_${safeNombre}_${Date.now()}@catalinas.com`;
     }
 
     const nuevoCliente = await User.create(clienteData);
@@ -115,7 +104,7 @@ export const createAdminCliente = async (req, res) => {
         userId: nuevoCliente._id,
         nombre: nuevoCliente.nombre,
         email: nuevoCliente.email || '',
-        telefono: nuevoCliente.telefono || '',
+        phone: nuevoCliente.phone || '',
         direccion: nuevoCliente.direccion || '',
         notasCRM: nuevoCliente.notasCRM || '',
         createdByAdmin: nuevoCliente.createdByAdmin,
@@ -126,6 +115,71 @@ export const createAdminCliente = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error interno al crear el cliente',
+      error: error.message,
+    });
+  }
+};
+
+export const updateAdminCliente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, email, phone, direccion, notasCRM } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'El nombre es obligatorio para actualizar un cliente',
+      });
+    }
+
+    const updateData = { nombre: nombre.trim() };
+
+    if (typeof email !== 'undefined') {
+      updateData.email = email.trim() ? email.toLowerCase() : undefined;
+    }
+
+    if (typeof phone !== 'undefined') {
+      updateData.phone = phone.trim() ? phone : undefined;
+    }
+
+    if (typeof direccion !== 'undefined') {
+      updateData.direccion = direccion;
+    }
+
+    if (typeof notasCRM !== 'undefined') {
+      updateData.notasCRM = notasCRM;
+    }
+
+    const updatedCliente = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+      context: 'query',
+    });
+
+    if (!updatedCliente) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cliente no encontrado',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: updatedCliente._id,
+        nombre: updatedCliente.nombre,
+        email: updatedCliente.email || '',
+        phone: updatedCliente.phone || '',
+        direccion: updatedCliente.direccion || '',
+        notasCRM: updatedCliente.notasCRM || '',
+        createdByAdmin: updatedCliente.createdByAdmin,
+      },
+    });
+  } catch (error) {
+    console.error('Error en updateAdminCliente:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno al actualizar el cliente',
       error: error.message,
     });
   }
