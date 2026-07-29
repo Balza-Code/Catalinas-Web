@@ -59,15 +59,8 @@ export async function createOrder(req, res) {
       if (existingUser) {
         orderUserId = existingUser._id;
       } else {
-        const randomPassword = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
-        const emailName = normalizeEmailName(nombreCliente) || "cliente";
-        const tempEmail = `detal_${emailName}_${Date.now()}@catalinas.com`;
-
         const newUser = new User({
           nombre: nombreCliente,
-          email: tempEmail,
-          password: hashedPassword,
           role: "cliente",
           createdByAdmin: true,
         });
