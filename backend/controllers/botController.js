@@ -34,43 +34,57 @@ export const handleWhatsAppOrder = async (req, res) => {
   try {
     const { event, data } = req.body;
 
-    // 1. Ignorar eventos que NO sean de mensajes para evitar falsos 400
+    // 1. Ignorar cualquier evento que NO sea de mensajes
     if (event && event !== 'messages.upsert') {
       return res.status(200).json({
         success: true,
-        message: `Evento '${event}' ignorado correctamente.`,
+        message: `Evento '${event}' recibido e ignorado correctamente.`,
       });
     }
 
-    // 2. Extraer datos si vienen desde Evolution API v1.8 o de la petición directa
-    let phone = req.body.phone || data?.key?.remoteJid || data?.sender;
-    let nombreCliente = req.body.nombreCliente || data?.pushName || 'Cliente WhatsApp';
+    // 2. Extraer teléfono de Evolution o del body directo
+    const rawPhone = 
+      req.body.phone || 
+      data?.key?.remoteJid || 
+      data?.sender || 
+      '';
+
+    const normalizedPhone = normalizePhone(rawPhone);
+
+    // 3. Extraer texto del mensaje
     let messageText =
       req.body.messageText ||
       data?.message?.conversation ||
-      data?.message?.extendedTextMessage?.text;
+      data?.message?.extendedTextMessage?.text ||
+      '';
+
+    // 4. Extraer nombre del cliente
+    let nombreCliente = 
+      req.body.nombreCliente || 
+      data?.pushName || 
+      'Cliente WhatsApp';
 
     let rawItems = req.body.items;
     let metodoPago = req.body.metodoPago;
     let notas = req.body.notas;
 
-    const normalizedPhone = normalizePhone(phone);
-
-    if (!normalizedPhone) {
-      return res.status(400).json({
-        success: false,
-        message: 'phone es obligatorio o no se pudo extraer del webhook',
+    // Si entra un mensaje sin texto (sticker, nota de voz, etc.)
+    if (!messageText && !rawItems) {
+      return res.status(200).json({
+        success: true,
+        message: 'Petición o mensaje sin texto/items procesables. Ignorado con éxito.',
       });
     }
 
-    if (!isValidPhone(normalizedPhone)) {
+    // Validar teléfono
+    if (!normalizedPhone || !isValidPhone(normalizedPhone)) {
       return res.status(400).json({
         success: false,
-        message: 'phone debe contener entre 8 y 15 dígitos válidos',
+        message: 'No se pudo obtener un teléfono válido del mensaje o petición.',
       });
     }
 
-    // 3. Procesar con Gemini si existe mensaje de texto
+    // 5. Interpretar mensaje con la IA
     if (messageText && typeof messageText === 'string') {
       const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
 
@@ -80,20 +94,14 @@ export const handleWhatsAppOrder = async (req, res) => {
       notas = parsedData.notas || notas;
     }
 
-    if (!nombreCliente || !nombreCliente.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'nombreCliente es obligatorio',
-      });
-    }
-
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'items es obligatorio y debe contener al menos un producto',
+        message: 'No se pudieron extraer productos del mensaje para crear el pedido.',
       });
     }
 
+    // 6. Buscar o crear cliente en BD
     const existingUser = await User.findOne({ phone: normalizedPhone }).lean();
     let userId;
 
@@ -111,6 +119,7 @@ export const handleWhatsAppOrder = async (req, res) => {
       userId = newUser._id;
     }
 
+    // 7. Procesar productos y totales
     const processedItems = [];
     let totalUSD = 0;
     let costoTotalProduccion = 0;
@@ -150,6 +159,7 @@ export const handleWhatsAppOrder = async (req, res) => {
       costoTotalProduccion += itemCosto;
     }
 
+    // 8. Crear la orden en MongoDB
     const newOrder = await Order.create({
       user: userId,
       clienteNombre: nombreCliente.trim(),
