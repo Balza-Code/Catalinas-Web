@@ -15,13 +15,17 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
+  phone: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+  },
   password: {
     type: String,
-    required: false,
-  },
-  telefono: {
-    type: String,
-    default: '',
+    required: function() {
+      return this.role === 'admin';
+    },
   },
   direccion: {
     type: String,
@@ -30,6 +34,23 @@ const userSchema = new mongoose.Schema({
   notasCRM: {
     type: String,
     default: '',
+  },
+  metadataCRM: {
+    nombreLocal: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    direccion: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    origen: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   createdByAdmin: {
     type: Boolean,
