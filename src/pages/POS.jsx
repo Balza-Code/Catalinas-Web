@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Modal from "../components/Modal";
 import { useCatalinas } from "../hooks/useCatalinas";
 import { useAdmin } from "../hooks/useAdmin";
 import { createOrder } from "../services/orderService";
@@ -16,19 +17,37 @@ export default function POS() {
   const [moneda, setMoneda] = useState("USD");
   const [tasaCambio, setTasaCambio] = useState("");
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [filtroTipo, setFiltroTipo] = useState("todos");
   const [clienteSearch, setClienteSearch] = useState("");
+  const [clienteDropdownOpen, setClienteDropdownOpen] = useState(false);
   const [selectedClienteId, setSelectedClienteId] = useState("");
   const [selectedClienteName, setSelectedClienteName] = useState("Consumidor Final");
-  const [showNewCliente, setShowNewCliente] = useState(false);
   const [newClienteName, setNewClienteName] = useState("");
+  const [newClientePhone, setNewClientePhone] = useState("");
   const [isCreatingCliente, setIsCreatingCliente] = useState(false);
+  const [isRegisteringClient, setIsRegisteringClient] = useState(false);
   const [pedidoEstado, setPedidoEstado] = useState("Pendiente");
   const [pagoEstado, setPagoEstado] = useState("Pendiente de Pago");
   const [notas, setNotas] = useState("");
 
-  const availableCatalinas = catalinas.filter(
-    (c) => c.disponible && (c.tipoVenta === "detal" || c.tipoVenta === "ambos")
-  );
+  const isDigitalPayment = metodoPago === "Transferencia/Pago Móvil";
+
+  const normalizeText = (value) =>
+    value
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const availableCatalinas = catalinas.filter((c) => {
+    if (!c.disponible) return false;
+    if (filtroTipo === 'todos') return true;
+    if (filtroTipo === 'detal') return c.tipoVenta === 'detal' || c.tipoVenta === 'ambos';
+    if (filtroTipo === 'mayor') return c.tipoVenta === 'online' || c.tipoVenta === 'ambos';
+    return true;
+  });
 
   const addToCart = (catalina) => {
     const existing = cart.find((item) => item._id === catalina._id);
@@ -65,27 +84,82 @@ export default function POS() {
   const totalBs = tasaCambio ? (totalUSD * parseFloat(tasaCambio)).toFixed(2) : 0;
   const totalItems = cart.reduce((acc, item) => acc + item.cantidad, 0);
 
+  const normalizedSearch = normalizeText(clienteSearch);
+
   const filteredClientes = clientes.filter((cliente) => {
-    const search = clienteSearch.toLowerCase().trim();
-    if (!search) return true;
-    const nombre = cliente.nombre?.toLowerCase() || "";
-    const email = cliente.email?.toLowerCase() || "";
-    return nombre.includes(search) || email.includes(search);
+    if (!normalizedSearch) return true;
+    const nombre = normalizeText(cliente.nombre || '');
+    const email = normalizeText(cliente.email || '');
+    return nombre.includes(normalizedSearch) || email.includes(normalizedSearch);
   });
 
-  const handleClienteSelect = (e) => {
-    const value = e.target.value;
-    if (!value) {
-      setSelectedClienteId("");
-      setSelectedClienteName("Consumidor Final");
-      return;
-    }
+  const selectCliente = (cliente) => {
+    setSelectedClienteId(cliente.userId || cliente._id || '');
+    setSelectedClienteName(cliente.nombre || 'Cliente Registrado');
+    setClienteSearch(cliente.nombre || '');
+    setClienteDropdownOpen(false);
+  };
 
-    const cliente = clientes.find(
-      (item) => item.userId === value || item._id === value
-    );
-    setSelectedClienteId(value);
-    setSelectedClienteName(cliente ? cliente.nombre : "Cliente Registrado");
+  const handleClearSelectedCliente = () => {
+    setSelectedClienteId('');
+    setSelectedClienteName('Consumidor Final');
+    setClienteSearch('');
+    setClienteDropdownOpen(false);
+  };
+
+  const handleOpenRegisterClientModal = (prefillName = '') => {
+    setNewClienteName(prefillName);
+    setNewClientePhone('');
+    setIsCreatingCliente(false);
+    setClienteDropdownOpen(false);
+
+    showModal({
+      title: 'Registrar Cliente Express',
+      children: (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre *</label>
+            <input
+              type="text"
+              value={newClienteName}
+              onChange={(e) => setNewClienteName(e.target.value)}
+              className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
+              placeholder="Nombre completo"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Teléfono / WhatsApp</label>
+            <input
+              type="text"
+              value={newClientePhone}
+              onChange={(e) => setNewClientePhone(e.target.value)}
+              className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
+              placeholder="Opcional"
+            />
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                hideModal();
+              }}
+              className="rounded-button border border-surface-border bg-surface-card px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-surface-bg"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateNewCliente}
+              disabled={!newClienteName.trim() || isCreatingCliente}
+              className={`rounded-button px-4 py-3 text-sm font-semibold text-white transition ${newClienteName.trim() && !isCreatingCliente ? 'bg-brand-500 hover:bg-brand-600' : 'bg-gray-300 cursor-not-allowed'}`}
+            >
+              {isCreatingCliente ? 'Guardando...' : 'Guardar cliente'}
+            </button>
+          </div>
+        </div>
+      ),
+      onClose: hideModal,
+    });
   };
 
   const handleCreateNewCliente = async () => {
@@ -97,12 +171,20 @@ export default function POS() {
 
     try {
       setIsCreatingCliente(true);
-      const created = await createAdminCliente(token, { nombre: newClienteName.trim() });
-      showModal({ title: "Cliente creado", message: `Cliente ${created.nombre} registrado con éxito.` });
+      const created = await createAdminCliente(token, {
+        nombre: newClienteName.trim(),
+        phone: newClientePhone.trim() || undefined,
+      });
+      hideModal();
+      showModal({
+        title: "Cliente creado",
+        message: `Cliente ${created.nombre} registrado con éxito.`,
+      });
       setSelectedClienteId(created.userId || created._id || "");
       setSelectedClienteName(created.nombre);
-      setShowNewCliente(false);
+      setClienteSearch(created.nombre);
       setNewClienteName("");
+      setNewClientePhone("");
       refreshClientes();
     } catch (error) {
       showModal({ title: "Error al crear cliente", message: error.message || "No se pudo registrar el cliente." });
@@ -116,12 +198,13 @@ export default function POS() {
       showModal({ title: "Carrito vacío", message: "Debes agregar productos para la venta." });
       return;
     }
-    if (moneda === "Bs" && (!tasaCambio || isNaN(tasaCambio) || parseFloat(tasaCambio) <= 0)) {
+    if (!isDigitalPayment && moneda === "Bs" && (!tasaCambio || isNaN(tasaCambio) || parseFloat(tasaCambio) <= 0)) {
       showModal({ title: "Tasa requerida", message: "Ingresa una tasa de cambio válida para operaciones en Bs." });
       return;
     }
 
-    const totalFinal = moneda === "Bs" ? parseFloat(totalBs) : parseFloat(totalUSD.toFixed(2));
+    const effectiveMoneda = isDigitalPayment ? "USD" : moneda;
+    const totalFinal = effectiveMoneda === "Bs" ? parseFloat(totalBs) : parseFloat(totalUSD.toFixed(2));
     const costoTotalProduccion = cart.reduce(
       (acc, item) => acc + (item.costoProduccion || 0) * item.cantidad,
       0
@@ -143,8 +226,8 @@ export default function POS() {
       estadoPago: pagoEstado,
       pagado: pagoEstado === "Pago Completado" ? totalFinal : 0,
       metodoPago,
-      monedaPago: moneda,
-      tasaCambio: moneda === "Bs" ? parseFloat(tasaCambio) : undefined,
+      monedaPago: effectiveMoneda,
+      tasaCambio: !isDigitalPayment && effectiveMoneda === "Bs" ? parseFloat(tasaCambio) : undefined,
       notas,
     };
 
@@ -169,7 +252,23 @@ export default function POS() {
     <div className="flex flex-col md:flex-row h-full w-full bg-surface-bg overflow-hidden relative">
       {/* PANEL IZQUIERDO: PRODUCTOS */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar h-full pb-32 md:pb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 font-['Inter']">Centro de Creación de Pedidos</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 font-['Inter']">Centro de Creación de Pedidos</h2>
+        <div className="mb-6 flex flex-wrap gap-2">
+          {[
+            { key: 'todos', label: 'Todos' },
+            { key: 'detal', label: 'Detal' },
+            { key: 'mayor', label: 'Mayor' },
+          ].map((filter) => (
+            <button
+              key={filter.key}
+              type="button"
+              onClick={() => setFiltroTipo(filter.key)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filtroTipo === filter.key ? 'bg-brand-500 text-white' : 'bg-surface-card text-gray-700 border border-surface-border hover:bg-surface-border'}`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {availableCatalinas.map((c) => (
             <button
@@ -267,67 +366,118 @@ export default function POS() {
               </div>
               <span className="rounded-full bg-brand-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-700">Omnicanal</span>
             </div>
-            <input
-              type="text"
-              value={clienteSearch}
-              onChange={(e) => setClienteSearch(e.target.value)}
-              placeholder="Buscar cliente..."
-              className="w-full rounded-button border border-surface-border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 bg-surface-bg outline-none"
-            />
-            <select
-              value={selectedClienteId}
-              onChange={handleClienteSelect}
-              className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
-            >
-              <option value="">Consumidor Final (Venta Rápida)</option>
-              {filteredClientes.map((cliente) => (
-                <option key={cliente.userId ?? cliente._id} value={cliente.userId ?? cliente._id}>
-                  {cliente.nombre} {cliente.email ? `• ${cliente.email}` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <input
+                type="text"
+                value={clienteSearch}
+                onChange={(e) => {
+                  setClienteSearch(e.target.value);
+                  setClienteDropdownOpen(true);
+                }}
+                onFocus={() => setClienteDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setClienteDropdownOpen(false), 150)}
+                placeholder="Buscar cliente..."
+                className="w-full rounded-button border border-surface-border px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 bg-surface-bg outline-none"
+              />
+              {clienteDropdownOpen && (
+                <div className="absolute z-20 mt-2 w-full rounded-card border border-surface-border bg-white shadow-lg max-h-72 overflow-y-auto">
+                  {filteredClientes.length > 0 ? (
+                    filteredClientes.map((cliente) => (
+                      <button
+                        key={cliente.userId ?? cliente._id}
+                        type="button"
+                        onMouseDown={() => selectCliente(cliente)}
+                        className="w-full text-left px-4 py-3 hover:bg-brand-50"
+                      >
+                        <div className="text-sm font-semibold text-slate-800">{cliente.nombre}</div>
+                        <div className="text-xs text-gray-500">{cliente.email || 'Sin email registrado'}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-gray-500">Ningún cliente coincide con "{clienteSearch}"</div>
+                  )}
+                  {clienteSearch.trim() && (
+                    <button
+                      type="button"
+                      onMouseDown={() => {
+                        setIsRegisteringClient(true);
+                        setNewClienteName(clienteSearch.trim());
+                        setNewClientePhone('');
+                      }}
+                      className="w-full text-left border-t border-surface-border px-4 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+                    >
+                      + Registrar "{clienteSearch.trim()}" como nuevo cliente
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            {selectedClienteId && selectedClienteName !== 'Consumidor Final' ? (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-sm text-slate-700">
+                <span>👤 {selectedClienteName}</span>
+                <button
+                  type="button"
+                  onClick={handleClearSelectedCliente}
+                  className="text-brand-600 font-semibold hover:text-brand-700"
+                >
+                  (x)
+                </button>
+              </div>
+            ) : null}
             {adminError && (
               <p className="text-sm text-status-danger">Error cargando clientes: {adminError}</p>
             )}
             <button
               type="button"
-              onClick={() => setShowNewCliente(true)}
+              onClick={() => setIsRegisteringClient(true)}
               className="w-full rounded-button border border-brand-200 bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-100 transition"
             >
-               Registrar Nuevo Cliente Físico
+              Registrar Nuevo Cliente Físico
             </button>
-            {showNewCliente && (
-              <div className="space-y-3 pt-2">
-                <input
-                  type="text"
-                  value={newClienteName}
-                  onChange={(e) => setNewClienteName(e.target.value)}
-                  placeholder="Nombre del cliente"
-                  className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                />
-                <div className="grid grid-cols-2 gap-2">
+          </div>
+          {isRegisteringClient && (
+            <Modal open={isRegisteringClient} title="Registrar Cliente Express" onClose={() => setIsRegisteringClient(false)}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre *</label>
+                  <input
+                    type="text"
+                    value={newClienteName}
+                    onChange={(e) => setNewClienteName(e.target.value)}
+                    className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                    placeholder="Nombre completo"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Teléfono / WhatsApp</label>
+                  <input
+                    type="text"
+                    value={newClientePhone}
+                    onChange={(e) => setNewClientePhone(e.target.value)}
+                    className="w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                    placeholder="Opcional"
+                  />
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsRegisteringClient(false)}
+                    className="rounded-button border border-surface-border bg-surface-card px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-surface-bg"
+                  >
+                    Cancelar
+                  </button>
                   <button
                     type="button"
                     onClick={handleCreateNewCliente}
                     disabled={!newClienteName.trim() || isCreatingCliente}
-                    className={`rounded-button px-3 py-2 text-sm font-semibold text-white transition ${newClienteName.trim() && !isCreatingCliente ? 'bg-brand-500 hover:bg-brand-600' : 'bg-gray-300 cursor-not-allowed'}`}
+                    className={`rounded-button px-4 py-3 text-sm font-semibold text-white transition ${newClienteName.trim() && !isCreatingCliente ? 'bg-brand-500 hover:bg-brand-600' : 'bg-gray-300 cursor-not-allowed'}`}
                   >
-                    {isCreatingCliente ? 'Registrando...' : 'Crear Cliente'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNewCliente(false);
-                      setNewClienteName("");
-                    }}
-                    className="rounded-button border border-surface-border bg-surface-card px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-surface-bg"
-                  >
-                    Cancelar
+                    {isCreatingCliente ? 'Guardando...' : 'Guardar cliente'}
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </Modal>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-3 bg-surface-card rounded-card border border-surface-border p-4 shadow-sm">
@@ -371,7 +521,14 @@ export default function POS() {
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.12em]">Método de Pago</p>
               <select
                 value={metodoPago}
-                onChange={(e) => setMetodoPago(e.target.value)}
+                onChange={(e) => {
+                  const selectedMethod = e.target.value;
+                  setMetodoPago(selectedMethod);
+                  if (selectedMethod === "Transferencia/Pago Móvil") {
+                    setMoneda("USD");
+                    setTasaCambio("");
+                  }
+                }}
                 className="mt-2 w-full rounded-button border border-surface-border bg-surface-bg px-3 py-2 text-sm text-gray-700 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none"
               >
                 <option value="Efectivo">Efectivo</option>
@@ -388,8 +545,10 @@ export default function POS() {
                   USD
                 </button>
                 <button
-                  className={`flex-1 py-2 text-sm font-bold transition ${moneda === "Bs" ? "bg-brand-500 text-white" : "bg-surface-bg text-gray-600 hover:bg-surface-border"}`}
-                  onClick={() => setMoneda("Bs")}
+                  className={`flex-1 py-2 text-sm font-bold transition ${moneda === "Bs" ? "bg-brand-500 text-white" : "bg-surface-bg text-gray-600"} ${isDigitalPayment ? 'cursor-not-allowed opacity-50' : 'hover:bg-surface-border'}`}
+                  onClick={() => !isDigitalPayment && setMoneda("Bs")}
+                  disabled={isDigitalPayment}
+                  title={isDigitalPayment ? 'Bs no disponible para pago digital' : ''}
                 >
                   Bs
                 </button>
@@ -397,7 +556,7 @@ export default function POS() {
             </div>
           </div>
 
-          {moneda === "Bs" && (
+          {!isDigitalPayment && moneda === "Bs" && (
             <div className="mb-4 rounded-card border border-surface-border bg-surface-card p-4 shadow-sm">
               <label className="text-xs font-semibold text-gray-500 mb-2 block">Tasa de cambio (Bs/USD)</label>
               <input
@@ -416,7 +575,9 @@ export default function POS() {
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-500 font-bold">Total</span>
             <div className="text-right">
-              {moneda === "Bs" && !!tasaCambio ? (
+              {isDigitalPayment ? (
+                <div className="text-3xl font-black text-gray-800">${totalUSD.toFixed(2)}</div>
+              ) : moneda === "Bs" && !!tasaCambio ? (
                 <>
                   <div className="text-3xl font-black text-gray-800">Bs. {totalBs}</div>
                   <div className="text-sm font-medium text-gray-400">${totalUSD.toFixed(2)} USD</div>

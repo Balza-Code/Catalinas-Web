@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { useModal } from "../context/ModalContext.jsx";
-import { createAdminCliente } from "../services/adminService.js";
+import { createAdminCliente, updateAdminCliente } from "../services/adminService.js";
 import { getOrdersByUser } from "../services/orderService.js";
 import ResumenVentasRecientes from "../components/ResumenVentasRecientes.jsx";
 
@@ -15,7 +15,7 @@ const CreateClientForm = ({
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
-    telefono: "",
+    phone: "",
     direccion: "",
     notasCRM: "",
   });
@@ -85,8 +85,8 @@ const CreateClientForm = ({
         <div>
           <label className="block text-sm font-semibold mb-1 text-slate-700">Teléfono</label>
           <input
-            name="telefono"
-            value={formData.telefono}
+            name="phone"
+            value={formData.phone}
             onChange={handleChange}
             className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="Teléfono"
@@ -121,6 +121,127 @@ const CreateClientForm = ({
         className="w-full rounded-button bg-brand-500 px-4 py-3 text-white font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50"
       >
         {submitting ? "Creando..." : "Crear cliente"}
+      </button>
+    </form>
+  );
+};
+
+const EditClientForm = ({
+  userToken,
+  cliente,
+  refreshClientes,
+  showModal,
+  hideModal,
+}) => {
+  const [formData, setFormData] = useState({
+    nombre: cliente.nombre || "",
+    email: cliente.email || "",
+    phone: cliente.phone || "",
+    direccion: cliente.direccion || "",
+    notasCRM: cliente.notasCRM || "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.nombre.trim()) {
+      showModal({
+        title: "Nombre requerido",
+        message: "Debes ingresar el nombre del cliente.",
+      });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await updateAdminCliente(userToken, cliente.userId, formData);
+      refreshClientes();
+      hideModal();
+      showModal({
+        title: "Cliente actualizado",
+        message: "Los datos del cliente se guardaron correctamente.",
+      });
+    } catch (err) {
+      showModal({
+        title: "Error",
+        message: err.message || "No se pudo actualizar el cliente.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Nombre</label>
+        <input
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          required
+          className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          placeholder="Nombre completo"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Email</label>
+        <input
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          type="email"
+          className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          placeholder="Email opcional"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-slate-700">Teléfono</label>
+          <input
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            placeholder="Teléfono"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-slate-700">Dirección</label>
+          <input
+            name="direccion"
+            value={formData.direccion}
+            onChange={handleChange}
+            className="w-full rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            placeholder="Dirección"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold mb-1 text-slate-700">Notas CRM</label>
+        <textarea
+          name="notasCRM"
+          value={formData.notasCRM}
+          onChange={handleChange}
+          className="w-full min-h-[120px] rounded-button border border-surface-border bg-surface-bg px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          placeholder="Ej. Cliente habitual, prefiere envíos en la mañana"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full rounded-button bg-brand-500 px-4 py-3 text-white font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50"
+      >
+        {submitting ? "Guardando..." : "Guardar cambios"}
       </button>
     </form>
   );
@@ -285,6 +406,21 @@ const ClientDirectory = () => {
     });
   };
 
+  const openEditClientModal = (cliente) => {
+    showModal({
+      title: `Editar cliente: ${cliente.nombre}`,
+      children: (
+        <EditClientForm
+          userToken={token}
+          cliente={cliente}
+          refreshClientes={refreshClientes}
+          showModal={showModal}
+          hideModal={hideModal}
+        />
+      ),
+    });
+  };
+
   if (error) {
     return (
       <div className="p-6">
@@ -307,7 +443,7 @@ const ClientDirectory = () => {
         </button>
       </div>
 
-      <div className="relative z-10 bg-surface-bg/95 backdrop-blur-md pb-4 pt-2 mb-6 border-b border-surface-border">
+      <div className="relative bg-surface-bg/95 backdrop-blur-md pb-4 pt-2 mb-6 border-b border-surface-border">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-md">
             <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">🔍</span>
@@ -390,9 +526,9 @@ const ClientDirectory = () => {
               <p className="text-sm text-gray-600 mb-2">
                 Email: {cliente.email || "Sin email"}
               </p>
-              {cliente.telefono && (
+              {cliente.phone && (
                 <p className="text-sm text-gray-600 mb-2">
-                  Teléfono: {cliente.telefono}
+                  Teléfono: {cliente.phone}
                 </p>
               )}
               {cliente.direccion && (
@@ -426,19 +562,25 @@ const ClientDirectory = () => {
               </div>
               <div className="mt-5 pt-4 border-t border-surface-border flex flex-wrap gap-2">
                 <a
-                  href={cliente.telefono ? `https://wa.me/${cliente.telefono.replace(/\D/g, '')}` : "#"}
+                  href={cliente.phone ? `https://wa.me/${cliente.phone.replace(/\D/g, '')}` : "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.telefono ? 'bg-[#25D366] text-white hover:bg-[#128C7E]' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
+                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.phone ? 'bg-[#25D366] text-white hover:bg-[#128C7E]' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
                 >
                   📱 WhatsApp
                 </a>
                 <a
-                  href={cliente.telefono ? `tel:${cliente.telefono.replace(/\D/g, '')}` : "#"}
-                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.telefono ? 'bg-sky-500 text-white hover:bg-sky-600' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
+                  href={cliente.phone ? `tel:${cliente.phone.replace(/\D/g, '')}` : "#"}
+                  className={`inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold transition ${cliente.phone ? 'bg-sky-500 text-white hover:bg-sky-600' : 'bg-surface-bg text-slate-400 cursor-not-allowed border border-surface-border'}`}
                 >
                   📞 Llamar
                 </a>
+                <button
+                  onClick={() => openEditClientModal(cliente)}
+                  className="inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold text-slate-700 bg-surface-bg border border-surface-border hover:bg-surface-border transition"
+                >
+                  Editar
+                </button>
                 <button
                   onClick={() => openClientProfile(cliente)}
                   className="inline-flex items-center justify-center rounded-button px-4 py-2 text-sm font-semibold text-slate-700 bg-surface-bg border border-surface-border hover:bg-surface-border transition"

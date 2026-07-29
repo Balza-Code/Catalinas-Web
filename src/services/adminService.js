@@ -40,6 +40,26 @@ export const createAdminCliente = async (token, clienteData) => {
   return data.data;
 };
 
+export const updateAdminCliente = async (token, clienteId, clienteData) => {
+  const response = await fetch(`${API_BASE_URL}/admin/clientes/${clienteId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(clienteData),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    const mensaje = errorBody?.message || 'Error al actualizar el cliente';
+    throw new Error(mensaje);
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
 export const getFinancialStats = async (token, periodo) => {
   const response = await fetch(`${API_BASE_URL}/admin/stats?periodo=${encodeURIComponent(periodo)}`, {
     method: 'GET',
