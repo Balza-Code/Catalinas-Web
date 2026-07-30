@@ -64,10 +64,22 @@ const findCatalinaByIdOrName = async (item) => {
 
   return null;
 };
+const processedMessages = new Set();
 
 export const handleWhatsAppOrder = async (req, res) => {
   try {
     const { event, data } = req.body;
+
+    const messageId = data?.key?.id;
+    if (messageId) {
+      if (processedMessages.has(messageId)) {
+        console.log(`⚠️ Mensaje ${messageId} ya fue procesado. Ignorando duplicado.`);
+        return res.status(200).json({ success: true, message: 'Mensaje ya procesado' });
+      }
+      processedMessages.add(messageId);
+      // Limpiar el ID después de 1 minuto para no saturar memoria
+      setTimeout(() => processedMessages.delete(messageId), 60000);
+    }
 
     // 1. Ignorar cualquier evento que NO sea de mensajes entrantes
     if (event && event !== 'messages.upsert') {
