@@ -14,7 +14,32 @@ const isValidPhone = (phone) => {
   return /^\d{8,15}$/.test(digits);
 };
 
-// 🔍 Búsqueda mejorada: Si no lo encuentra exacto, busca por coincidencia parcial (ej. "negras" -> "Catalina Negra")
+// 🔍 Consultar nombre a Evolution API vía Await si no vino en el webhook
+const fetchContactNameFromEvolution = async (phone, baseUrl, apiKey) => {
+  try {
+    if (!baseUrl || !apiKey) return null;
+    
+    // Consulta directa a la API de Evolution para traer el perfil del contacto
+    const response = await fetch(`${baseUrl}/chat/findContacts/catalinas-evolution`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': apiKey,
+      },
+      body: JSON.stringify({ where: { id: `${phone}@s.whatsapp.net` } }),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    const contact = Array.isArray(data) ? data[0] : data;
+    
+    return contact?.pushName || contact?.name || null;
+  } catch (error) {
+    console.warn('⚠️ No se pudo consultar el contacto en Evolution API:', error.message);
+    return null;
+  }
+};
+
 const findCatalinaByIdOrName = async (item) => {
   if (item.catalinaId) {
     const catalinaById = await Catalina.findById(item.catalinaId).lean();
@@ -24,12 +49,10 @@ const findCatalinaByIdOrName = async (item) => {
   if (item.nombre) {
     const cleanName = item.nombre.trim().replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     
-    // 1. Intento exacto
     let catalogItem = await Catalina.findOne({ 
       nombre: new RegExp(`^${cleanName}$`, 'i') 
     }).lean();
 
-    // 2. Intento por inclusión (coincidencia parcial) si el exacto falla
     if (!catalogItem) {
       catalogItem = await Catalina.findOne({ 
         nombre: new RegExp(cleanName, 'i') 
@@ -71,12 +94,6 @@ export const handleWhatsAppOrder = async (req, res) => {
       data?.message?.extendedTextMessage?.text ||
       '';
 
-    // 4. Extraer nombre del cliente
-    let nombreCliente = 
-      req.body.nombreCliente || 
-      data?.pushName || 
-      'Cliente WhatsApp';
-
     let rawItems = req.body.items;
     let metodoPago = req.body.metodoPago;
     let notas = req.body.notas;
@@ -96,12 +113,64 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 5. Interpretar mensaje con la IA
+    // -------------------------------------------------------------
+    // 4. BÚSQUEDA Y VÍNCULO DE USUARIO (MONGO DB + EVOLUTION AWAIT)
+    // -------------------------------------------------------------
+    let existingUser = await User.findOne({ phone: normalizedPhone });
+    let userId;
+    let nombreCliente;
+
+    if (existingUser) {
+      // ✅ SI YA EXISTE: Asignamos el pedido a este cliente y usamos el nombre de BD
+      userId = existingUser._id;
+      
+      // Si el usuario en BD se llamaba 'Cliente WhatsApp' pero Evolution mandó ahora el pushName real, lo actualizamos
+      if (existingUser.nombre === 'Cliente WhatsApp' && data?.pushName && data.pushName !== 'undefined') {
+        existingUser.nombre = data.pushName.trim();
+        await existingUser.save();
+      }
+      
+      nombreCliente = existingUser.nombre;
+      console.log(`👤 Pedido asignado a cliente existente: ${nombreCliente} (${normalizedPhone})`);
+
+    } else {
+      // 🆕 SI ES NUEVO: Intentamos obtener el pushName con fallback y Await si venía undefined
+      let pushName = data?.pushName;
+
+      if (!pushName || pushName === 'undefined') {
+        const serverUrl = req.body.server_url || process.env.EVOLUTION_API_URL;
+        const apiKey = req.body.apikey || process.env.EVOLUTION_API_KEY;
+        
+        console.log(`🔍 Pidiendo nombre a Evolution API vía Await para: ${normalizedPhone}...`);
+        pushName = await fetchContactNameFromEvolution(normalizedPhone, serverUrl, apiKey);
+      }
+
+      nombreCliente = pushName?.trim() || req.body.nombreCliente || 'Cliente WhatsApp';
+
+      const newUser = await User.create({
+        nombre: nombreCliente,
+        phone: normalizedPhone,
+        role: 'cliente',
+        metadataCRM: { origen: 'WhatsApp_Bot' },
+      });
+      userId = newUser._id;
+      console.log(`✨ Nuevo cliente creado en BD: ${nombreCliente}`);
+    }
+
+    // -------------------------------------------------------------
+    // 5. INTERPRETAR MENSAJE CON LA IA
+    // -------------------------------------------------------------
     if (messageText && typeof messageText === 'string') {
       console.log(`🤖 Enviando a IA mensaje de ${nombreCliente}: "${messageText}"`);
       const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
 
-      nombreCliente = parsedData.nombreCliente || nombreCliente;
+      // Si la IA detecta que el cliente dijo explícitamente su nombre en el chat ("Hola soy Juan")
+      if (parsedData.nombreCliente && parsedData.nombreCliente.toLowerCase() !== 'cliente whatsapp') {
+        nombreCliente = parsedData.nombreCliente;
+        // Opcional: actualizar el nombre del usuario en BD
+        await User.findByIdAndUpdate(userId, { nombre: nombreCliente });
+      }
+
       rawItems = parsedData.items;
       metodoPago = parsedData.metodoPago || metodoPago;
       notas = parsedData.notas || notas;
@@ -115,34 +184,19 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 6. Buscar o crear cliente en BD
-    let existingUser = await User.findOne({ phone: normalizedPhone }).lean();
-    let userId;
-
-    if (existingUser) {
-      userId = existingUser._id;
-    } else {
-      const newUser = await User.create({
-        nombre: nombreCliente.trim(),
-        phone: normalizedPhone,
-        role: 'cliente',
-        metadataCRM: { origen: 'WhatsApp_Bot' },
-      });
-      userId = newUser._id;
-    }
-
-    // 7. Procesar productos y totales
+    // -------------------------------------------------------------
+    // 6. PROCESAR PRODUCTOS Y TOTALES
+    // -------------------------------------------------------------
     const processedItems = [];
     let totalUSD = 0;
     let costoTotalProduccion = 0;
 
     for (const item of rawItems) {
       const cantidad = Number(item.cantidad) || 0;
-      if (cantidad <= 0) continue; // Saltar items con cantidad 0 en lugar de abortar toda la orden
+      if (cantidad <= 0) continue;
 
       const catalogItem = await findCatalinaByIdOrName(item);
 
-      // Si no encuentra el item en el catálogo, usa los datos fallback o valores base
       const precio = Number(catalogItem?.precio ?? item.precio ?? 0);
       const costoProduccion = Number(catalogItem?.costoProduccion ?? item.costoProduccion ?? 0);
       const nombre = catalogItem?.nombre ?? item.nombre ?? 'Producto General';
@@ -176,7 +230,9 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 8. Crear la orden en MongoDB
+    // -------------------------------------------------------------
+    // 7. CREAR LA ORDEN EN MONGO DB
+    // -------------------------------------------------------------
     const newOrder = await Order.create({
       user: userId,
       clienteNombre: nombreCliente.trim(),
@@ -190,7 +246,7 @@ export const handleWhatsAppOrder = async (req, res) => {
       notas: notas || '',
     });
 
-    console.log('✅ ¡PEDIDO GUARDADO EN MONGO DB! ID:', newOrder._id);
+    console.log(`✅ ¡PEDIDO GUARDADO! ID: ${newOrder._id} a nombre de: ${nombreCliente}`);
 
     return res.status(201).json({
       success: true,
