@@ -4,16 +4,7 @@ import { parseWhatsAppMessageToOrder } from '../services/aiOrderService.js';
 
 const router = Router();
 
-// Middleware temporal de logs para ver los valores en Render
-const debugWebhookLog = (req, res, next) => {
-  console.log('--- DEBUG WEBHOOK AUTH ---');
-  console.log('Header apikey:', req.headers['apikey']);
-  console.log('Header x-bot-api-key:', req.headers['x-bot-api-key']);
-  console.log('Body apikey:', req.body?.apikey);
-  console.log('Expected Key (BOT_API_KEY):', process.env.BOT_API_KEY);
-  console.log('--------------------------');
-  next();
-};
+
 
 const validateBotApiKey = (req, res, next) => {
   const apiKey = 
@@ -41,6 +32,43 @@ const validateBotApiKey = (req, res, next) => {
   next();
 };
 
+// 🔄 DISPATCHER: Maneja la reconexión si cae la sesión o delega a la creación de pedidos
+const handleWebhookEvent = async (req, res) => {
+  const { event, data } = req.body;
+
+  // 1. Manejo de estado de la conexión (Reconexión automática)
+  if (event === 'connection.update') {
+    const status = data?.state;
+    console.log(`📡 Estado de conexión recibido: ${status}`);
+
+    if (status === 'close') {
+      console.warn('⚠️ La conexión de WhatsApp se cerró. Disparando auto-reconexión...');
+
+      const serverUrl = process.env.EVOLUTION_API_URL;
+      const apiKey = process.env.EVOLUTION_API_KEY || process.env.BOT_API_KEY;
+      const instanceName = process.env.EVOLUTION_INSTANCE_NAME || 'catalinas-evolution';
+
+      if (serverUrl && apiKey) {
+        try {
+          const response = await fetch(`${serverUrl}/instance/connect/${instanceName}`, {
+            method: 'GET',
+            headers: { 'apikey': apiKey }
+          });
+          const result = await response.json();
+          console.log('🔄 Petición de reconexión enviada con éxito:', result);
+        } catch (err) {
+          console.error('❌ Error al intentar reconectar la instancia:', err.message);
+        }
+      }
+    }
+
+    return res.status(200).json({ success: true, message: 'Evento de conexión procesado' });
+  }
+
+  // 2. Si es un mensaje entrante, lo pasamos al controlador de pedidos
+  return handleWhatsAppOrder(req, res);
+};
+
 const parseTestHandler = async (req, res) => {
   try {
     const { messageText, phone } = req.body;
@@ -65,8 +93,8 @@ const parseTestHandler = async (req, res) => {
   }
 };
 
-// 📌 NOTA: debugWebhookLog VA DE PRIMERO para atrapar la petición antes de validar
-router.post('/webhook', debugWebhookLog, validateBotApiKey, handleWhatsAppOrder);
+// 📌 Ruta apuntando al nuevo handler
+router.post('/webhook', validateBotApiKey, handleWebhookEvent);
 router.post('/parse-test', validateBotApiKey, parseTestHandler);
 
 export default router;
