@@ -14,23 +14,32 @@ const formatProductList = (products) => {
 const buildPrompt = (products, messageText) => {
   const productList = formatProductList(products);
 
-  return `Eres el asistente de ventas de la fábrica de catalinas de Ildefonso Balza. Tu objetivo es interpretar pedidos de clientes desde mensajes de texto o transcripciones de voz de WhatsApp.
+  return `Eres el asistente de ventas de la fábrica de catalinas de Ildefonso Balza. Tu objetivo es clasificar los mensajes entrantes de WhatsApp y, SI CORRESPONDE, interpretar los pedidos de clientes.
 
 Catálogo de productos disponibles (Venta por PAQUETE):
 ${productList}
 
-REGLAS DE INTERPRETACIÓN DE NEGOCIO:
-1. UNIDAD DE VENTA: Todas las cantidades mencionadas ("dos catalinas", "3 negras", "5 bultos") representan PAQUETES completos, NO galletas sueltas.
-2. PRODUCTOS DESCONOCIDOS / CONSULTAS: Si el cliente pregunta por productos que NO están en el catálogo (ej: "cortado", "besitos de coco", etc.), NO los agregues a "items". Agrega esa consulta dentro del campo "notas".
-3. RECLAMOS Y DEVOLUCIONES: Si el cliente reporta mercancía dañada ("se mosearon", "vinieron rotas", "salieron duras"), NO reduzcas el pedido automáticamente. Registra el nuevo pedido en "items" y coloca el detalle del reclamo de forma destacada en "notas" (ej: "RECLAMO: Reporta 5 paquetes moseados").
-4. SABOR POR DEFECTO: Si el cliente pide "catalinas" sin especificar color/sabor, asigna "Catalina Negra" e indica en "notas" que el sabor no fue especificado.
-5. IDENTIFICACIÓN DEL VENDEDOR VS CLIENTE: El dueño/vendedor de la fábrica se llama "Ildefonso Balza" (o "Sr. Balza", "Alfonso", "Ilde"). Si el mensaje empieza con saludos como "Buenas tardes Sr. Balza", "Epa Ilde", "Señor Alfonso", NUNCA asignes esos nombres al campo 'nombreCliente'. En esos casos, si el cliente no dice su propio nombre, asigna "Cliente WhatsApp".
+REGLAS DE CLASIFICACIÓN DE INTENCIÓN (MUY IMPORTANTE):
+1. EVALÚA LA INTENCIÓN ("esPedido"):
+   - Coloca "esPedido": true ÚNICAMENTE si el mensaje expresa una intención explícita de COMPRAR o SOLICITAR un nuevo despacho ahora (Ej: "Mándame 2 paquetes", "Necesito 5 negras", "Traeme 3 bultos").
+   - Coloca "esPedido": false si el mensaje es:
+     * Un recordatorio de deudas o mercancía pendiente pasada (Ej: "Ayer quedaron debiendo 2 paquetes", "Quería recordarle que estamos pendientes con 2 paquetes").
+     * Saludos, bendiciones, citas bíblicas, preguntas casuales o conversación general (Ej: "Dios te bendiga", "Llegó hoy a Caracas", "Ok perfecto").
+     * Preguntas de disponibilidad o precios sin solicitud explícita de envío.
+
+2. UNIDAD DE VENTA: Todas las cantidades mencionadas ("dos catalinas", "3 negras", "5 bultos") representan PAQUETES completos, NO galletas sueltas.
+3. PRODUCTOS DESCONOCIDOS / CONSULTAS: Si el cliente pregunta por productos que NO están en el catálogo (ej: "cortado", "besitos de coco"), NO los agregues a "items". Agrega esa consulta dentro del campo "notas".
+4. RECLAMOS Y DEVOLUCIONES: Si el cliente reporta mercancía dañada ("se mosearon", "vinieron rotas"), NO reduzcas el pedido automáticamente. Registra el nuevo pedido en "items" y coloca el detalle en "notas".
+5. SABOR POR DEFECTO: Si pide "catalinas" sin especificar color/sabor, asigna "Catalina Negra" e indica en "notas" que el sabor no fue especificado.
+6. IDENTIFICACIÓN DEL VENDEDOR VS CLIENTE: El dueño/vendedor de la fábrica se llama "Ildefonso Balza" (o "Sr. Balza", "Alfonso", "Ilde"). Si el mensaje empieza saludándolo a él, NUNCA asignes esos nombres a 'nombreCliente'. Si el cliente no dice su propio nombre, asigna "Cliente WhatsApp".
 
 Mensaje/Transcripción del cliente:
 "${messageText}"
 
-Responde ÚNICAMENTE con un objeto JSON con este esquema:
+Responde ÚNICAMENTE con un objeto JSON con este esquema exacto:
 {
+  "esPedido": true,
+  "razonClasificacion": "Explicación breve de por qué es o no es un pedido",
   "nombreCliente": "Nombre o apodo del cliente si se identifica, de lo contrario 'Cliente WhatsApp'",
   "items": [
     { "nombre": "Nombre EXACTO del producto del catálogo", "cantidad": 1 }
@@ -48,7 +57,7 @@ const callAIModel = async (prompt) => {
     throw new Error('No hay clave de API de IA configurada. Define GEMINI_API_KEY o OPENAI_API_KEY en el .env.');
   }
 
-  // 1. Usar Gemini (Opción Recomendada / Gratuita)
+  // 1. Usar Gemini (Opción Recomendada)
   if (geminiKey) {
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     
@@ -103,22 +112,43 @@ export const parseWhatsAppMessageToOrder = async (messageText, userPhone) => {
     throw new Error(`Error al parsear el JSON devuelto por la IA: ${err.message}`);
   }
 
+  // 🛑 SI LA IA DETERMINA QUE NO ES UN PEDIDO NUEVO:
+  if (parsed.esPedido === false) {
+    return {
+      esPedido: false,
+      razon: parsed.razonClasificacion || 'El mensaje no contiene una orden de compra activa.',
+      phone: userPhone
+    };
+  }
+
   // Cruzar ítems devueltos con los productos reales para garantizar precios de BD
   const itemsProcesados = Array.isArray(parsed.items)
-    ? parsed.items.map((item) => {
-        const prodBD = products.find(
-          (p) => p.nombre.toLowerCase() === String(item.nombre || '').toLowerCase()
-        );
+    ? parsed.items
+        .map((item) => {
+          const prodBD = products.find(
+            (p) => p.nombre.toLowerCase() === String(item.nombre || '').toLowerCase()
+          );
 
-        return {
-          nombre: prodBD ? prodBD.nombre : String(item.nombre || '').trim(),
-          cantidad: Math.max(1, Number(item.cantidad) || 1),
-          precio: prodBD ? prodBD.precio : (Number(item.precio) || 0)
-        };
-      })
+          return {
+            nombre: prodBD ? prodBD.nombre : String(item.nombre || '').trim(),
+            cantidad: Math.max(1, Number(item.cantidad) || 1),
+            precio: prodBD ? prodBD.precio : (Number(item.precio) || 0)
+          };
+        })
+        .filter((item) => item.nombre.length > 0)
     : [];
 
-  const result = {
+  // Si fue marcado como pedido pero no trajo ítems válidos, lo anulamos limpiamente
+  if (itemsProcesados.length === 0) {
+    return {
+      esPedido: false,
+      razon: 'No se identificaron productos válidos del catálogo en la solicitud.',
+      phone: userPhone
+    };
+  }
+
+  return {
+    esPedido: true,
     nombreCliente: parsed.nombreCliente?.trim() || 'Cliente WhatsApp',
     items: itemsProcesados,
     metodoPago: ['Efectivo', 'Pago Móvil', 'Divisas', 'Pendiente'].includes(parsed.metodoPago)
@@ -127,10 +157,4 @@ export const parseWhatsAppMessageToOrder = async (messageText, userPhone) => {
     notas: String(parsed.notas || '').trim(),
     phone: userPhone,
   };
-
-  if (result.items.length === 0) {
-    throw new Error('La IA no logró identificar ningún producto del catálogo en el mensaje del cliente.');
-  }
-
-  return result;
 };

@@ -64,6 +64,7 @@ const findCatalinaByIdOrName = async (item) => {
 
   return null;
 };
+
 const processedMessages = new Set();
 
 export const handleWhatsAppOrder = async (req, res) => {
@@ -126,7 +127,28 @@ export const handleWhatsAppOrder = async (req, res) => {
     }
 
     // -------------------------------------------------------------
-    // 4. BÚSQUEDA Y VÍNCULO DE USUARIO (MONGO DB + EVOLUTION AWAIT)
+    // 4. INTERPRETAR MENSAJE CON LA IA (EVALUACIÓN PREVIA DE INTENCIÓN)
+    // -------------------------------------------------------------
+    if (messageText && typeof messageText === 'string') {
+      console.log(`🤖 Enviando a IA mensaje para analizar: "${messageText}"`);
+      const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
+
+      // 🛑 FILTRO CLAVE: Si la IA detecta que NO es un pedido (recordatorio, saludo, cita bíblica, etc.)
+      if (!parsedData.esPedido) {
+        console.log(`ℹ️ Mensaje ignorado (No es pedido): "${messageText}" - Razón: ${parsedData.razon}`);
+        return res.status(200).json({
+          success: true,
+          message: 'El mensaje fue evaluado correctamente pero no corresponde a una orden de compra.',
+        });
+      }
+
+      rawItems = parsedData.items;
+      metodoPago = parsedData.metodoPago || metodoPago;
+      notas = parsedData.notas || notas;
+    }
+
+    // -------------------------------------------------------------
+    // 5. BÚSQUEDA Y VÍNCULO DE USUARIO (SOLO SI ES UN PEDIDO REAL)
     // -------------------------------------------------------------
     let existingUser = await User.findOne({ phone: normalizedPhone });
     let userId;
@@ -167,25 +189,6 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
       userId = newUser._id;
       console.log(`✨ Nuevo cliente creado en BD: ${nombreCliente}`);
-    }
-
-    // -------------------------------------------------------------
-    // 5. INTERPRETAR MENSAJE CON LA IA
-    // -------------------------------------------------------------
-    if (messageText && typeof messageText === 'string') {
-      console.log(`🤖 Enviando a IA mensaje de ${nombreCliente}: "${messageText}"`);
-      const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
-
-      // Si la IA detecta que el cliente dijo explícitamente su nombre en el chat ("Hola soy Juan")
-      if (parsedData.nombreCliente && parsedData.nombreCliente.toLowerCase() !== 'cliente whatsapp') {
-        nombreCliente = parsedData.nombreCliente;
-        // Opcional: actualizar el nombre del usuario en BD
-        await User.findByIdAndUpdate(userId, { nombre: nombreCliente });
-      }
-
-      rawItems = parsedData.items;
-      metodoPago = parsedData.metodoPago || metodoPago;
-      notas = parsedData.notas || notas;
     }
 
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
