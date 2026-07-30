@@ -14,17 +14,29 @@ const isValidPhone = (phone) => {
   return /^\d{8,15}$/.test(digits);
 };
 
+// 🔍 Búsqueda mejorada: Si no lo encuentra exacto, busca por coincidencia parcial (ej. "negras" -> "Catalina Negra")
 const findCatalinaByIdOrName = async (item) => {
   if (item.catalinaId) {
     const catalinaById = await Catalina.findById(item.catalinaId).lean();
-    if (catalinaById) {
-      return catalinaById;
-    }
+    if (catalinaById) return catalinaById;
   }
 
   if (item.nombre) {
-    const regex = new RegExp(`^${item.nombre.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i');
-    return Catalina.findOne({ nombre: regex }).lean();
+    const cleanName = item.nombre.trim().replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    
+    // 1. Intento exacto
+    let catalogItem = await Catalina.findOne({ 
+      nombre: new RegExp(`^${cleanName}$`, 'i') 
+    }).lean();
+
+    // 2. Intento por inclusión (coincidencia parcial) si el exacto falla
+    if (!catalogItem) {
+      catalogItem = await Catalina.findOne({ 
+        nombre: new RegExp(cleanName, 'i') 
+      }).lean();
+    }
+
+    return catalogItem;
   }
 
   return null;
@@ -34,7 +46,7 @@ export const handleWhatsAppOrder = async (req, res) => {
   try {
     const { event, data } = req.body;
 
-    // 1. Ignorar cualquier evento que NO sea de mensajes
+    // 1. Ignorar cualquier evento que NO sea de mensajes entrantes
     if (event && event !== 'messages.upsert') {
       return res.status(200).json({
         success: true,
@@ -42,10 +54,10 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 2. Extraer teléfono priorizando el sender real (WhatsApp manda @lid en remoteJid a veces)
+    // 2. Extraer teléfono priorizando el sender real
     const rawPhone = 
       req.body.phone || 
-      data?.sender || // Prioridad 1: Número real (ej: 584141261150@s.whatsapp.net)
+      data?.sender || 
       data?.key?.remoteJidAlt || 
       data?.key?.remoteJid || 
       '';
@@ -69,15 +81,13 @@ export const handleWhatsAppOrder = async (req, res) => {
     let metodoPago = req.body.metodoPago;
     let notas = req.body.notas;
 
-    // Si entra un mensaje sin texto (sticker, nota de voz, etc.)
     if (!messageText && !rawItems) {
       return res.status(200).json({
         success: true,
-        message: 'Petición o mensaje sin texto/items procesables. Ignorado con éxito.',
+        message: 'Petición sin texto/items procesables. Ignorada.',
       });
     }
 
-    // Validar teléfono (Responder 200 a Evolution para evitar retries, pero avisar en el log)
     if (!normalizedPhone || !isValidPhone(normalizedPhone)) {
       console.warn('⚠️ Teléfono no válido detectado:', rawPhone);
       return res.status(200).json({
@@ -88,7 +98,7 @@ export const handleWhatsAppOrder = async (req, res) => {
 
     // 5. Interpretar mensaje con la IA
     if (messageText && typeof messageText === 'string') {
-      console.log(`🤖 Enviando a IA el mensaje de ${nombreCliente}: "${messageText}"`);
+      console.log(`🤖 Enviando a IA mensaje de ${nombreCliente}: "${messageText}"`);
       const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
 
       nombreCliente = parsedData.nombreCliente || nombreCliente;
@@ -99,15 +109,14 @@ export const handleWhatsAppOrder = async (req, res) => {
 
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
       console.warn('⚠️ La IA no pudo extraer items del mensaje:', messageText);
-      // Responder 200 a Evolution pero indicar que no hubo items
       return res.status(200).json({
         success: false,
-        message: 'No se pudieron extraer productos del mensaje para crear el pedido.',
+        message: 'No se pudieron extraer productos del mensaje.',
       });
     }
 
     // 6. Buscar o crear cliente en BD
-    const existingUser = await User.findOne({ phone: normalizedPhone }).lean();
+    let existingUser = await User.findOne({ phone: normalizedPhone }).lean();
     let userId;
 
     if (existingUser) {
@@ -117,9 +126,7 @@ export const handleWhatsAppOrder = async (req, res) => {
         nombre: nombreCliente.trim(),
         phone: normalizedPhone,
         role: 'cliente',
-        metadataCRM: {
-          origen: 'WhatsApp_Bot',
-        },
+        metadataCRM: { origen: 'WhatsApp_Bot' },
       });
       userId = newUser._id;
     }
@@ -131,22 +138,20 @@ export const handleWhatsAppOrder = async (req, res) => {
 
     for (const item of rawItems) {
       const cantidad = Number(item.cantidad) || 0;
-      if (cantidad <= 0) {
-        return res.status(200).json({
-          success: false,
-          message: `La cantidad de '${item.nombre || 'item'}' debe ser mayor a 0`,
-        });
-      }
+      if (cantidad <= 0) continue; // Saltar items con cantidad 0 en lugar de abortar toda la orden
 
       const catalogItem = await findCatalinaByIdOrName(item);
-      const precio = Number(catalogItem?.precio ?? item.precio ?? 0);
-      const costoProduccion = Number(catalogItem?.costoProduccion ?? (item.costoProduccion || 0));
-      const nombre = catalogItem?.nombre ?? item.nombre ?? 'Producto sin nombre';
 
-      if (!precio || precio <= 0) {
+      // Si no encuentra el item en el catálogo, usa los datos fallback o valores base
+      const precio = Number(catalogItem?.precio ?? item.precio ?? 0);
+      const costoProduccion = Number(catalogItem?.costoProduccion ?? item.costoProduccion ?? 0);
+      const nombre = catalogItem?.nombre ?? item.nombre ?? 'Producto General';
+
+      if (precio <= 0) {
+        console.warn(`⚠️ ATENCIÓN: El producto '${nombre}' no tiene un precio válido en el catálogo.`);
         return res.status(200).json({
           success: false,
-          message: `El precio de '${nombre}' debe ser un número mayor a 0`,
+          message: `El producto '${nombre}' no coincide con ningún catálogo activo o carece de precio.`,
         });
       }
 
@@ -164,6 +169,13 @@ export const handleWhatsAppOrder = async (req, res) => {
       costoTotalProduccion += itemCosto;
     }
 
+    if (processedItems.length === 0) {
+      return res.status(200).json({
+        success: false,
+        message: 'Ninguno de los ítems especificados cuenta con cantidad válida.',
+      });
+    }
+
     // 8. Crear la orden en MongoDB
     const newOrder = await Order.create({
       user: userId,
@@ -178,7 +190,7 @@ export const handleWhatsAppOrder = async (req, res) => {
       notas: notas || '',
     });
 
-    console.log('✅ Pedido creado exitosamente en BD:', newOrder._id);
+    console.log('✅ ¡PEDIDO GUARDADO EN MONGO DB! ID:', newOrder._id);
 
     return res.status(201).json({
       success: true,
@@ -188,7 +200,6 @@ export const handleWhatsAppOrder = async (req, res) => {
 
   } catch (error) {
     console.error('🔥 Error interno en handleWhatsAppOrder:', error);
-    // IMPORTANTE: Responder 200 con success: false para que Evolution entienda que el webhook fue recibido
     return res.status(200).json({
       success: false,
       message: 'Error interno al registrar el pedido',
