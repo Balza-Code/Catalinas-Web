@@ -2,8 +2,18 @@ import { Router } from 'express';
 import { handleWhatsAppOrder } from '../controllers/botController.js';
 import { parseWhatsAppMessageToOrder } from '../services/aiOrderService.js';
 
-
 const router = Router();
+
+// Middleware temporal de logs para ver los valores en Render
+const debugWebhookLog = (req, res, next) => {
+  console.log('--- DEBUG WEBHOOK AUTH ---');
+  console.log('Header apikey:', req.headers['apikey']);
+  console.log('Header x-bot-api-key:', req.headers['x-bot-api-key']);
+  console.log('Body apikey:', req.body?.apikey);
+  console.log('Expected Key (BOT_API_KEY):', process.env.BOT_API_KEY);
+  console.log('--------------------------');
+  next();
+};
 
 const validateBotApiKey = (req, res, next) => {
   const apiKey = 
@@ -11,6 +21,7 @@ const validateBotApiKey = (req, res, next) => {
     req.header('apikey') || 
     req.header('x-bot-api-key') || 
     req.query?.apikey;  
+  
   const expectedKey = process.env.BOT_API_KEY;
 
   if (!expectedKey) {
@@ -54,7 +65,8 @@ const parseTestHandler = async (req, res) => {
   }
 };
 
-router.post('/webhook', validateBotApiKey, handleWhatsAppOrder);
+// 📌 NOTA: debugWebhookLog VA DE PRIMERO para atrapar la petición antes de validar
+router.post('/webhook', debugWebhookLog, validateBotApiKey, handleWhatsAppOrder);
 router.post('/parse-test', validateBotApiKey, parseTestHandler);
 
 export default router;
