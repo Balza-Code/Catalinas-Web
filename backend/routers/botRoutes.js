@@ -6,7 +6,11 @@ import { parseWhatsAppMessageToOrder } from '../services/aiOrderService.js';
 const router = Router();
 
 const validateBotApiKey = (req, res, next) => {
-  const apiKey = req.header('apikey') || req.header('x-bot-api-key') || req.body?.apikey;
+  const apiKey = 
+    req.body?.apikey || 
+    req.header('apikey') || 
+    req.header('x-bot-api-key') || 
+    req.query?.apikey;  
   const expectedKey = process.env.BOT_API_KEY;
 
   if (!expectedKey) {

@@ -42,11 +42,12 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // 2. Extraer teléfono de Evolution o del body directo
+    // 2. Extraer teléfono priorizando el sender real (WhatsApp manda @lid en remoteJid a veces)
     const rawPhone = 
       req.body.phone || 
+      data?.sender || // Prioridad 1: Número real (ej: 584141261150@s.whatsapp.net)
+      data?.key?.remoteJidAlt || 
       data?.key?.remoteJid || 
-      data?.sender || 
       '';
 
     const normalizedPhone = normalizePhone(rawPhone);
@@ -76,16 +77,18 @@ export const handleWhatsAppOrder = async (req, res) => {
       });
     }
 
-    // Validar teléfono
+    // Validar teléfono (Responder 200 a Evolution para evitar retries, pero avisar en el log)
     if (!normalizedPhone || !isValidPhone(normalizedPhone)) {
-      return res.status(400).json({
+      console.warn('⚠️ Teléfono no válido detectado:', rawPhone);
+      return res.status(200).json({
         success: false,
-        message: 'No se pudo obtener un teléfono válido del mensaje o petición.',
+        message: 'No se pudo obtener un teléfono válido del mensaje.',
       });
     }
 
     // 5. Interpretar mensaje con la IA
     if (messageText && typeof messageText === 'string') {
+      console.log(`🤖 Enviando a IA el mensaje de ${nombreCliente}: "${messageText}"`);
       const parsedData = await parseWhatsAppMessageToOrder(messageText, normalizedPhone);
 
       nombreCliente = parsedData.nombreCliente || nombreCliente;
@@ -95,7 +98,9 @@ export const handleWhatsAppOrder = async (req, res) => {
     }
 
     if (!Array.isArray(rawItems) || rawItems.length === 0) {
-      return res.status(400).json({
+      console.warn('⚠️ La IA no pudo extraer items del mensaje:', messageText);
+      // Responder 200 a Evolution pero indicar que no hubo items
+      return res.status(200).json({
         success: false,
         message: 'No se pudieron extraer productos del mensaje para crear el pedido.',
       });
@@ -127,19 +132,19 @@ export const handleWhatsAppOrder = async (req, res) => {
     for (const item of rawItems) {
       const cantidad = Number(item.cantidad) || 0;
       if (cantidad <= 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
           message: `La cantidad de '${item.nombre || 'item'}' debe ser mayor a 0`,
         });
       }
 
       const catalogItem = await findCatalinaByIdOrName(item);
-      const precio = Number(catalogItem?.precio ?? item.precio);
+      const precio = Number(catalogItem?.precio ?? item.precio ?? 0);
       const costoProduccion = Number(catalogItem?.costoProduccion ?? (item.costoProduccion || 0));
       const nombre = catalogItem?.nombre ?? item.nombre ?? 'Producto sin nombre';
 
       if (!precio || precio <= 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
           message: `El precio de '${nombre}' debe ser un número mayor a 0`,
         });
@@ -173,14 +178,18 @@ export const handleWhatsAppOrder = async (req, res) => {
       notas: notas || '',
     });
 
-    res.status(201).json({
+    console.log('✅ Pedido creado exitosamente en BD:', newOrder._id);
+
+    return res.status(201).json({
       success: true,
       orderId: newOrder._id,
       message: 'Pedido registrado desde WhatsApp con éxito',
     });
+
   } catch (error) {
-    console.error('Error en handleWhatsAppOrder:', error);
-    res.status(500).json({
+    console.error('🔥 Error interno en handleWhatsAppOrder:', error);
+    // IMPORTANTE: Responder 200 con success: false para que Evolution entienda que el webhook fue recibido
+    return res.status(200).json({
       success: false,
       message: 'Error interno al registrar el pedido',
       error: error.message,
